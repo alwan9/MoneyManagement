@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kelola Keuangan - MoneyM</title>
+  <link rel="manifest" href="manifest.json">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+    }
+  </script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 antialiased min-h-screen flex flex-col transition-colors duration-200">
+
+  <!-- Header Navbar -->
+  <header class="sticky top-0 z-40 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center font-bold text-xl shadow-md shadow-indigo-600/30">
+          <iconify-icon icon="lucide:wallet" class="text-xl"></iconify-icon>
+        </div>
+        <div>
+          <h1 class="text-base font-extrabold text-zinc-900 dark:text-zinc-100 tracking-tight leading-none">MoneyM</h1>
+          <p class="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium">Finance Module</p>
+        </div>
+      </div>
+
+      <nav class="hidden md:flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800/80 p-1 rounded-xl border border-zinc-200 dark:border-zinc-700/60">
+        <a href="dashboard.html" class="px-4 py-2 text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition flex items-center gap-1.5">
+          <iconify-icon icon="lucide:layout-dashboard"></iconify-icon>
+          <span>Dashboard</span>
+        </a>
+        <a href="trading.html" class="px-4 py-2 text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition flex items-center gap-1.5">
+          <iconify-icon icon="lucide:candlestick-chart"></iconify-icon>
+          <span>Progress Trading</span>
+        </a>
+        <a href="finance.html" class="px-4 py-2 text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-white dark:bg-zinc-900 rounded-lg shadow-sm flex items-center gap-1.5">
+          <iconify-icon icon="lucide:wallet-cards"></iconify-icon>
+          <span>Kelola Keuangan</span>
+        </a>
+        <a id="nav-admin-link" href="admin.html" class="hidden px-4 py-2 text-xs font-semibold text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded-lg transition flex items-center gap-1.5">
+          <iconify-icon icon="lucide:shield-check"></iconify-icon>
+          <span>Panel Admin</span>
+        </a>
+      </nav>
+
+      <div class="flex items-center gap-3">
+        <button id="btn-privacy-toggle" onclick="togglePrivacyMode()" class="p-2 text-zinc-500 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition text-base flex items-center justify-center" title="Privacy Mode (Sembunyikan Saldo)">
+          <iconify-icon icon="lucide:eye" class="text-lg text-zinc-400"></iconify-icon>
+        </button>
+
+        <button id="btn-theme-toggle" onclick="toggleTheme()" class="p-2 text-zinc-500 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition text-base flex items-center justify-center" title="Toggle Theme">
+          <iconify-icon icon="lucide:moon" class="text-lg text-indigo-300"></iconify-icon>
+        </button>
+
+        <div class="text-right hidden sm:block border-l border-zinc-200 dark:border-zinc-800 pl-3">
+          <p id="user-display-name" class="text-xs font-bold text-zinc-800 dark:text-zinc-200">User</p>
+          <p id="user-display-role" class="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold uppercase tracking-wider">Member</p>
+        </div>
+        <button onclick="logout()" title="Keluar" class="p-2 text-zinc-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded-xl transition flex items-center justify-center">
+          <iconify-icon icon="lucide:log-out" class="text-lg"></iconify-icon>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Main Content Layout -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+    <!-- Top Action Bar -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-zinc-900 p-6 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
+      <div>
+        <h2 class="text-xl font-extrabold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+          <iconify-icon icon="lucide:wallet-cards" class="text-emerald-500"></iconify-icon>
+          <span>Manajemen Keuangan Pribadi</span>
+        </h2>
+        <p class="text-xs text-zinc-400">Pemasukan, pengeluaran harian, gaji, freelance, dan investasi.</p>
+      </div>
+      <button onclick="openFinanceModal()"
+        class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-2xl shadow-lg shadow-emerald-600/30 transition flex items-center justify-center gap-2">
+        <iconify-icon icon="lucide:plus" class="text-base"></iconify-icon>
+        <span>Transaksi Keuangan</span>
+      </button>
+    </div>
+
+    <!-- Quick Stats Bar -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="bg-white dark:bg-zinc-900 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-center">
+        <span class="text-[11px] font-bold text-zinc-400 uppercase">Total Pemasukan</span>
+        <p id="stat-total-pemasukan" class="text-lg font-bold text-emerald-500">Rp 0</p>
+      </div>
+      <div class="bg-white dark:bg-zinc-900 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-center">
+        <span class="text-[11px] font-bold text-zinc-400 uppercase">Total Pengeluaran</span>
+        <p id="stat-total-pengeluaran" class="text-lg font-bold text-rose-500">Rp 0</p>
+      </div>
+      <div class="bg-white dark:bg-zinc-900 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-center">
+        <span class="text-[11px] font-bold text-zinc-400 uppercase">Saldo Net Keuangan</span>
+        <p id="stat-saldo-bersih" class="text-lg font-bold text-zinc-800 dark:text-zinc-100">Rp 0</p>
+      </div>
+    </div>
+
+    <!-- Filter & Table Section -->
+    <div class="bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 p-6 shadow-sm space-y-4">
+      
+      <!-- Filter Controls -->
+      <div class="flex flex-col sm:flex-row gap-3 justify-between">
+        <div class="relative w-full sm:w-64">
+          <input type="text" id="search-finance" oninput="applyFilterAndSearch()" placeholder="Cari Kategori / Keterangan..."
+            class="px-4 py-2 pl-9 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full">
+          <iconify-icon icon="lucide:search" class="absolute left-3 top-2.5 text-zinc-400 text-sm pointer-events-none"></iconify-icon>
+        </div>
+        
+        <div class="flex gap-2">
+          <select id="filter-jenis" onchange="applyFilterAndSearch()"
+            class="px-4 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <option value="ALL">Semua Jenis</option>
+            <option value="Pemasukan">Pemasukan</option>
+            <option value="Pengeluaran">Pengeluaran</option>
+          </select>
+
+          <select id="filter-kategori" onchange="applyFilterAndSearch()"
+            class="px-4 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <option value="ALL">Semua Kategori</option>
+            <option value="Makan">Makan</option>
+            <option value="Transport">Transport</option>
+            <option value="Trading">Trading</option>
+            <option value="Gaji">Gaji</option>
+            <option value="Freelance">Freelance</option>
+            <option value="Investasi">Investasi</option>
+            <option value="Lain-lain">Lain-lain</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Data Table -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-zinc-50 dark:bg-zinc-950/60 text-[11px] uppercase font-bold text-zinc-400 border-b border-zinc-200 dark:border-zinc-800">
+              <th class="px-4 py-3">Tanggal</th>
+              <th class="px-4 py-3">Jenis</th>
+              <th class="px-4 py-3">Kategori</th>
+              <th class="px-4 py-3">Nominal</th>
+              <th class="px-4 py-3">Keterangan</th>
+              <th class="px-4 py-3 text-right">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="finance-table-body">
+            <!-- Rendered by finance.js -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination Container -->
+      <div id="finance-pagination" class="pt-2"></div>
+
+    </div>
+
+  </main>
+
+  <!-- Modal Form CRUD Keuangan -->
+  <div id="finance-modal" class="fixed inset-0 bg-zinc-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 w-full max-w-md rounded-3xl p-6 shadow-2xl space-y-4">
+      
+      <div class="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-3">
+        <h3 id="modal-finance-title" class="text-base font-bold text-zinc-900 dark:text-zinc-100">Tambah Transaksi Keuangan</h3>
+        <button onclick="closeFinanceModal()" class="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200">
+          <iconify-icon icon="lucide:x" class="text-lg"></iconify-icon>
+        </button>
+      </div>
+
+      <form id="finance-form" onsubmit="saveFinanceForm(event)" class="space-y-4 text-xs">
+        
+        <div>
+          <label class="block font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Tanggal</label>
+          <input type="date" id="input-tanggal" required class="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-zinc-900 dark:text-zinc-100">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Jenis Transaksi</label>
+            <select id="input-jenis" class="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-zinc-900 dark:text-zinc-100">
+              <option value="Pengeluaran">Pengeluaran</option>
+              <option value="Pemasukan">Pemasukan</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Kategori</label>
+            <select id="input-kategori" class="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-zinc-900 dark:text-zinc-100">
+              <option value="Makan">Makan</option>
+              <option value="Transport">Transport</option>
+              <option value="Trading">Trading</option>
+              <option value="Gaji">Gaji</option>
+              <option value="Freelance">Freelance</option>
+              <option value="Investasi">Investasi</option>
+              <option value="Lain-lain">Lain-lain</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Nominal (IDR)</label>
+          <div class="flex gap-1">
+            <input type="number" id="input-nominal" required placeholder="50000" class="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-zinc-900 dark:text-zinc-100 font-bold">
+            <button type="button" onclick="appendFinanceThousands()" class="px-3 py-1 bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-300 font-bold rounded-xl hover:bg-indigo-100 dark:hover:bg-indigo-900 transition whitespace-nowrap" title="Tambah 000">+000</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Keterangan / Rincian</label>
+          <input type="text" id="input-keterangan" placeholder="Makan siang, bensin, langganan..." class="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-zinc-900 dark:text-zinc-100">
+        </div>
+
+        <!-- Tagihan Rutin (Recurring Expense) -->
+        <div class="flex items-center gap-2 pt-1">
+          <input type="checkbox" id="input-is-recurring" class="w-4 h-4 accent-amber-500 rounded">
+          <label for="input-is-recurring" class="text-xs font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1 cursor-pointer">
+            <iconify-icon icon="lucide:refresh-cw" class="text-sm"></iconify-icon>
+            <span>Tandai sebagai Tagihan Rutin Bulanan</span>
+          </label>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-3 border-t border-zinc-200 dark:border-zinc-800">
+          <button type="button" onclick="closeFinanceModal()" class="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 font-semibold rounded-xl text-zinc-600 dark:text-zinc-300">Batal</button>
+          <button type="submit" class="px-4 py-2 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-500 flex items-center gap-1.5">
+            <iconify-icon icon="lucide:save"></iconify-icon>
+            <span>Simpan Transaksi</span>
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- Mobile Bottom Floating Bar -->
+  <div class="md:hidden fixed bottom-4 left-4 right-4 z-40">
+    <div class="bg-zinc-900/90 backdrop-blur-md text-white p-2 rounded-2xl shadow-2xl border border-zinc-800 flex items-center justify-around">
+      <a href="dashboard.html" class="flex flex-col items-center gap-1 px-4 py-2 text-zinc-400 font-medium text-[11px]">
+        <iconify-icon icon="lucide:layout-dashboard" class="text-base"></iconify-icon> Dashboard
+      </a>
+      <a href="trading.html" class="flex flex-col items-center gap-1 px-4 py-2 text-zinc-400 font-medium text-[11px]">
+        <iconify-icon icon="lucide:candlestick-chart" class="text-base"></iconify-icon> Trading
+      </a>
+      <a href="finance.html" class="flex flex-col items-center gap-1 px-3 py-1.5 text-emerald-400 font-bold text-[11px]">
+        <iconify-icon icon="lucide:wallet-cards" class="text-base"></iconify-icon> Keuangan
+      </a>
+      <a id="mobile-admin-link" href="admin.html" class="hidden flex flex-col items-center gap-1 px-3 py-1.5 text-amber-400 font-medium text-[11px]">
+        <iconify-icon icon="lucide:shield-check" class="text-base"></iconify-icon> Admin
+      </a>
+    </div>
+  </div>
+
+  <script src="js/helper.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/finance.js"></script>
+</body>
+</html>

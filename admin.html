@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kelola Pengguna & Permission - MoneyM</title>
+  <link rel="manifest" href="manifest.json">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+    }
+  </script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 antialiased min-h-screen flex flex-col transition-colors duration-200">
+
+  <!-- Header Navbar -->
+  <header class="sticky top-0 z-40 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Brand Logo -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center font-bold text-xl shadow-md shadow-indigo-600/30">
+          <iconify-icon icon="lucide:shield-check" class="text-xl"></iconify-icon>
+        </div>
+        <div>
+          <h1 class="text-base font-extrabold text-zinc-900 dark:text-zinc-100 tracking-tight leading-none">MoneyM Admin</h1>
+          <p class="text-[11px] text-indigo-500 font-semibold">User & Permission Control Center</p>
+        </div>
+      </div>
+
+      <!-- Desktop Navigation Menu -->
+      <nav class="hidden md:flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800/80 p-1 rounded-xl border border-zinc-200 dark:border-zinc-700/60">
+        <a href="dashboard.html" class="px-4 py-2 text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition flex items-center gap-1.5">
+          <iconify-icon icon="lucide:layout-dashboard"></iconify-icon>
+          <span>Dashboard</span>
+        </a>
+        <a href="trading.html" class="px-4 py-2 text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition flex items-center gap-1.5">
+          <iconify-icon icon="lucide:candlestick-chart"></iconify-icon>
+          <span>Progress Trading</span>
+        </a>
+        <a href="finance.html" class="px-4 py-2 text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition flex items-center gap-1.5">
+          <iconify-icon icon="lucide:wallet-cards"></iconify-icon>
+          <span>Kelola Keuangan</span>
+        </a>
+        <a href="admin.html" class="px-4 py-2 text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-white dark:bg-zinc-900 rounded-lg shadow-sm flex items-center gap-1.5">
+          <iconify-icon icon="lucide:shield-check"></iconify-icon>
+          <span>Panel Admin</span>
+        </a>
+      </nav>
+
+      <!-- Right Action Tools -->
+      <div class="flex items-center gap-3">
+        <button id="btn-privacy-toggle" onclick="togglePrivacyMode()" class="p-2 text-zinc-500 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition text-base flex items-center justify-center" title="Privacy Mode">
+          <iconify-icon icon="lucide:eye" class="text-lg text-zinc-400"></iconify-icon>
+        </button>
+
+        <button id="btn-theme-toggle" onclick="toggleTheme()" class="p-2 text-zinc-500 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition text-base flex items-center justify-center" title="Toggle Theme">
+          <iconify-icon icon="lucide:moon" class="text-lg text-indigo-300"></iconify-icon>
+        </button>
+
+        <div class="text-right hidden sm:block border-l border-zinc-200 dark:border-zinc-800 pl-3">
+          <p id="user-display-name" class="text-xs font-bold text-zinc-800 dark:text-zinc-200">Admin</p>
+          <p id="user-display-role" class="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold uppercase tracking-wider">Super Admin</p>
+        </div>
+        <button onclick="logout()" title="Keluar" class="p-2 text-zinc-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded-xl transition flex items-center justify-center">
+          <iconify-icon icon="lucide:log-out" class="text-lg"></iconify-icon>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Main Content Layout -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+    <!-- Header Banner -->
+    <div class="bg-gradient-to-r from-indigo-950 via-zinc-900 to-zinc-950 border border-indigo-500/30 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+      <div class="absolute right-4 bottom-2 opacity-10 pointer-events-none">
+        <iconify-icon icon="lucide:shield-check" class="text-[12rem] text-indigo-400"></iconify-icon>
+      </div>
+      <div class="relative z-10 max-w-2xl">
+        <span class="px-3 py-1 bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 rounded-full text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5 w-max mb-3">
+          <iconify-icon icon="lucide:lock"></iconify-icon>
+          <span>Super Admin Access Only</span>
+        </span>
+        <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Manajemen Pengguna & Matriks Hak Akses</h2>
+        <p class="text-zinc-300 text-xs sm:text-sm mt-2">Daftarkan akun pengguna baru, atur role & status aktif, reset password, dan tentukan izin modul per-user secara dinamis.</p>
+      </div>
+    </div>
+
+    <!-- Summary Stats Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+      <div class="bg-white dark:bg-zinc-900 p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Total Pengguna</span>
+          <div class="p-2.5 bg-indigo-500/10 text-indigo-500 rounded-xl">
+            <iconify-icon icon="lucide:users" class="text-xl"></iconify-icon>
+          </div>
+        </div>
+        <p id="stat-total-users" class="text-2xl font-extrabold text-zinc-900 dark:text-zinc-100">0</p>
+        <p class="text-[11px] text-zinc-400 mt-1">Akun terdaftar di database</p>
+      </div>
+
+      <div class="bg-white dark:bg-zinc-900 p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Pengguna Aktif</span>
+          <div class="p-2.5 bg-emerald-500/10 text-emerald-500 rounded-xl">
+            <iconify-icon icon="lucide:user-check" class="text-xl"></iconify-icon>
+          </div>
+        </div>
+        <p id="stat-active-users" class="text-2xl font-extrabold text-emerald-500">0</p>
+        <p class="text-[11px] text-zinc-400 mt-1">Status akun Active</p>
+      </div>
+
+      <div class="bg-white dark:bg-zinc-900 p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Super Admin</span>
+          <div class="p-2.5 bg-amber-500/10 text-amber-500 rounded-xl">
+            <iconify-icon icon="lucide:shield" class="text-xl"></iconify-icon>
+          </div>
+        </div>
+        <p id="stat-admin-count" class="text-2xl font-extrabold text-amber-500">0</p>
+        <p class="text-[11px] text-zinc-400 mt-1">Pengelola sistem penuh</p>
+      </div>
+    </div>
+
+    <!-- Action Bar: Add User & Search -->
+    <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-white dark:bg-zinc-900 p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
+      <div class="relative flex-1">
+        <iconify-icon icon="lucide:search" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 text-base"></iconify-icon>
+        <input type="text" id="search-users" onkeyup="filterUsers()" placeholder="Cari username atau UserID..."
+          class="w-full pl-10 pr-4 py-2.5 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      </div>
+      <button onclick="openCreateUserModal()" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow transition flex items-center justify-center gap-2">
+        <iconify-icon icon="lucide:user-plus" class="text-base"></iconify-icon>
+        <span>+ Buat Pengguna Baru</span>
+      </button>
+    </div>
+
+    <!-- Users & Permission Table -->
+    <div class="bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 p-6 shadow-sm space-y-4">
+      <div class="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-3">
+        <div>
+          <h3 class="text-base font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+            <iconify-icon icon="lucide:sliders" class="text-indigo-500"></iconify-icon>
+            <span>Matriks Permission & Kontrol Pengguna</span>
+          </h3>
+          <p class="text-xs text-zinc-400">Centang atau hilangkan izin modul untuk membatasi hak akses setiap pengguna.</p>
+        </div>
+        <button onclick="loadUsersAndPermissions()" class="p-2 text-zinc-400 hover:text-indigo-500 rounded-xl transition flex items-center gap-1 text-xs font-semibold" title="Refresh Data">
+          <iconify-icon icon="lucide:refresh-cw"></iconify-icon>
+          <span class="hidden sm:inline">Refresh</span>
+        </button>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-zinc-50 dark:bg-zinc-950/60 text-[11px] uppercase font-bold text-zinc-400 border-b border-zinc-200 dark:border-zinc-800">
+              <th class="px-4 py-3">Pengguna</th>
+              <th class="px-4 py-3">Role</th>
+              <th class="px-4 py-3">Status</th>
+              <th class="px-4 py-3 text-center">Dashboard</th>
+              <th class="px-4 py-3 text-center">Trading</th>
+              <th class="px-4 py-3 text-center">Keuangan</th>
+              <th class="px-4 py-3 text-center">CRUD Trade</th>
+              <th class="px-4 py-3 text-center">CRUD Keuangan</th>
+              <th class="px-4 py-3 text-right">Aksi Simpan</th>
+            </tr>
+          </thead>
+          <tbody id="admin-table-body">
+            <!-- Rendered by js/admin.js -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Modal Create New User -->
+  <div id="create-user-modal" class="fixed inset-0 bg-zinc-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 w-full max-w-md rounded-3xl p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-3">
+        <h3 class="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+          <iconify-icon icon="lucide:user-plus" class="text-indigo-500 text-lg"></iconify-icon>
+          <span>Buat Akun Pengguna Baru</span>
+        </h3>
+        <button onclick="closeCreateUserModal()" class="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200">
+          <iconify-icon icon="lucide:x" class="text-lg"></iconify-icon>
+        </button>
+      </div>
+
+      <form id="create-user-form" onsubmit="handleCreateUser(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Username</label>
+          <input type="text" id="new-username" required placeholder="Masukkan username"
+            class="w-full px-3.5 py-2.5 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs text-zinc-900 dark:text-zinc-100 font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Password (Default: Kosong)</label>
+          <div class="relative">
+            <input type="password" id="new-password" value="" autocomplete="new-password" required placeholder="Ketik password pengguna..."
+              class="w-full pl-3.5 pr-10 py-2.5 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <button type="button" onclick="togglePasswordVisibility('new-password', 'eye-new-pass')" class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-indigo-500 p-1 transition">
+              <iconify-icon id="eye-new-pass" icon="lucide:eye" class="text-base"></iconify-icon>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Role Pengguna</label>
+          <select id="new-role" class="w-full px-3.5 py-2.5 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs text-zinc-900 dark:text-zinc-100 font-bold">
+            <option value="User">Member (User Biasa)</option>
+            <option value="Super Admin">Super Admin</option>
+          </select>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-3 border-t border-zinc-200 dark:border-zinc-800">
+          <button type="button" onclick="closeCreateUserModal()" class="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 font-semibold rounded-xl text-xs text-zinc-600 dark:text-zinc-300">Batal</button>
+          <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs shadow transition flex items-center gap-1.5">
+            <iconify-icon icon="lucide:user-check"></iconify-icon>
+            <span>Buat Akun</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Reset Password (dengan Toggle Mata) -->
+  <div id="reset-password-modal" class="fixed inset-0 bg-zinc-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 w-full max-w-md rounded-3xl p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-3">
+        <h3 class="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+          <iconify-icon icon="lucide:key-round" class="text-amber-500 text-lg"></iconify-icon>
+          <span>Reset Password Pengguna</span>
+        </h3>
+        <button onclick="closeResetPasswordModal()" class="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200">
+          <iconify-icon icon="lucide:x" class="text-lg"></iconify-icon>
+        </button>
+      </div>
+
+      <form id="reset-password-form" onsubmit="handleResetPasswordSubmit(event)" class="space-y-4">
+        <input type="hidden" id="reset-user-id">
+        <p class="text-xs text-zinc-400">Ganti password untuk akun <span id="reset-username-display" class="font-bold text-indigo-400"></span>:</p>
+
+        <div>
+          <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Password Baru</label>
+          <div class="relative">
+            <input type="password" id="reset-new-password" value="" autocomplete="new-password" required placeholder="Masukkan password baru..."
+              class="w-full pl-3.5 pr-10 py-2.5 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs text-zinc-900 dark:text-zinc-100 font-bold focus:outline-none focus:ring-2 focus:ring-amber-500">
+            <button type="button" onclick="togglePasswordVisibility('reset-new-password', 'eye-reset-pass')" class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-amber-500 p-1 transition">
+              <iconify-icon id="eye-reset-pass" icon="lucide:eye" class="text-base"></iconify-icon>
+            </button>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-3 border-t border-zinc-200 dark:border-zinc-800">
+          <button type="button" onclick="closeResetPasswordModal()" class="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 font-semibold rounded-xl text-xs text-zinc-600 dark:text-zinc-300">Batal</button>
+          <button type="submit" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl text-xs shadow transition flex items-center gap-1.5">
+            <iconify-icon icon="lucide:save"></iconify-icon>
+            <span>Simpan Password Baru</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Mobile Bottom Floating Action Bar -->
+  <div class="md:hidden fixed bottom-4 left-4 right-4 z-40">
+    <div class="bg-zinc-900/90 backdrop-blur-md text-white p-2 rounded-2xl shadow-2xl border border-zinc-800 flex items-center justify-around">
+      <a href="dashboard.html" class="flex flex-col items-center gap-1 px-3 py-1.5 text-zinc-400 hover:text-white font-medium text-[11px]">
+        <iconify-icon icon="lucide:layout-dashboard" class="text-base"></iconify-icon> Dashboard
+      </a>
+      <a href="trading.html" class="flex flex-col items-center gap-1 px-3 py-1.5 text-zinc-400 hover:text-white font-medium text-[11px]">
+        <iconify-icon icon="lucide:candlestick-chart" class="text-base"></iconify-icon> Trading
+      </a>
+      <a href="finance.html" class="flex flex-col items-center gap-1 px-3 py-1.5 text-zinc-400 hover:text-white font-medium text-[11px]">
+        <iconify-icon icon="lucide:wallet-cards" class="text-base"></iconify-icon> Keuangan
+      </a>
+      <a href="admin.html" class="flex flex-col items-center gap-1 px-3 py-1.5 text-indigo-400 font-bold text-[11px]">
+        <iconify-icon icon="lucide:shield-check" class="text-base"></iconify-icon> Admin
+      </a>
+    </div>
+  </div>
+
+  <script src="js/helper.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

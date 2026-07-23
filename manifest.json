@@ -1,0 +1,40 @@
+{
+  "name": "MoneyM - Manajemen Keuangan & Trading",
+  "short_name": "MoneyM",
+  "description": "Aplikasi Manajemen Keuangan Pribadi & Progress Trading PWA",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#09090b",
+  "theme_color": "#4f46e5",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "https://api.iconify.design/lucide:wallet.svg?color=%234f46e5&width=192&height=192",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://api.iconify.design/lucide:wallet.svg?color=%234f46e5&width=512&height=512",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Tambah Trading Baru",
+      "short_name": "+ Trade",
+      "description": "Catat posisi trading baru",
+      "url": "./trading.html?action=add",
+      "icons": [{ "src": "https://api.iconify.design/lucide:candlestick-chart.svg?color=%234f46e5", "sizes": "192x192" }]
+    },
+    {
+      "name": "Catat Pengeluaran",
+      "short_name": "+ Keuangan",
+      "description": "Catat transaksi keuangan baru",
+      "url": "./finance.html?action=add",
+      "icons": [{ "src": "https://api.iconify.design/lucide:wallet-cards.svg?color=%2310b981", "sizes": "192x192" }]
+    }
+  ]
+}

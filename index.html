@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MoneyM - PWA Launcher</title>
+  <link rel="manifest" href="manifest.json">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="bg-slate-900 text-white min-h-screen flex items-center justify-center p-4">
+  <div class="text-center space-y-4">
+    <div class="inline-flex p-4 bg-indigo-600/20 text-indigo-400 rounded-3xl mb-2">
+      <svg class="w-12 h-12 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+      </svg>
+    </div>
+    <h1 class="text-3xl font-extrabold tracking-tight">MoneyM App</h1>
+    <p class="text-slate-400 text-sm">Mengalihkan ke sistem...</p>
+  </div>
+
+  <script src="js/helper.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const session = getSession();
+      if (session) {
+        window.location.href = './dashboard.html';
+      } else {
+        window.location.href = './login.html';
+      }
+    });
+  </script>
+</body>
+
+</html>

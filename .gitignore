@@ -1,0 +1,7 @@
+# Abaikan semua file Google Apps Script (.gs)
+*.gs
+
+# Cache & Temporary Files
+.DS_Store
+Thumbs.db
+node_modules/

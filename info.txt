@@ -1,0 +1,318 @@
+📋 Project Specification
+Aplikasi Manajemen Keuangan & Progress Trading
+Teknologi
+Google Apps Script (Backend)
+HTML
+CSS
+JavaScript
+Tailwind CSS (Frontend/UI)
+Google Spreadsheet (Database)
+Progressive Web App (PWA)
+Tujuan
+
+Membuat aplikasi berbasis web yang dapat diinstal di HP maupun laptop menggunakan PWA.
+
+Aplikasi digunakan untuk:
+
+Mencatat progress trading
+Mengelola keuangan pribadi
+Monitoring seluruh aktivitas dalam satu dashboard.
+Struktur Halaman
+1. Dashboard
+
+Menampilkan ringkasan data seperti:
+
+Total Profit
+Total Loss
+Win Rate
+Jumlah Trade
+Total Saldo
+Total Pengeluaran
+Grafik perkembangan
+Aktivitas terbaru
+2. Progress Trading
+
+Memiliki fitur CRUD.
+
+Data yang disimpan misalnya:
+
+Tanggal
+Pair/Saham
+Buy/Sell
+Entry
+Exit
+Lot
+Profit/Loss
+RR
+Catatan
+Screenshot
+Status
+
+Di halaman ini terdapat:
+
+TradingView Widget (versi gratis)
+Filter
+Search
+Statistik sederhana
+3. Kelola Keuangan
+
+Memiliki CRUD.
+
+Data:
+
+Tanggal
+Jenis
+Kategori
+Nominal
+Keterangan
+
+Contoh kategori
+
+Makan
+Transport
+Trading
+Gaji
+Freelance
+Investasi
+dll
+Sistem Login
+
+Multi User.
+
+Setiap user memiliki:
+
+User ID
+Username
+Password
+Role
+
+Login menggunakan Apps Script.
+
+Session Login.
+
+Password di-hash.
+
+Role
+User
+
+Hanya dapat:
+
+Melihat data miliknya
+CRUD data miliknya
+
+Tidak dapat melihat data user lain.
+
+Super Admin
+
+Dapat:
+
+Melihat seluruh user
+Melihat seluruh data
+Membuat user
+Edit user
+Hapus user
+Mengatur Permission
+Reset Password
+Permission
+
+Permission disimpan di Spreadsheet.
+
+Contoh:
+
+Permission	User
+Dashboard	✅
+Trading	✅
+Keuangan	❌
+CRUD Trading	✅
+CRUD Keuangan	❌
+
+Super Admin dapat mengubah permission tanpa mengubah kode.
+
+Database
+
+Menggunakan SATU Google Spreadsheet.
+
+Namun dipisahkan menjadi beberapa Sheet.
+
+Sheet Users
+UserID
+Username
+Password
+Role
+Status
+Sheet Trading
+TradingID
+UserID
+Semua data trading
+Sheet Keuangan
+FinanceID
+UserID
+Semua data keuangan
+Sheet Permission
+UserID
+Permission
+Sheet Setting
+
+Untuk konfigurasi aplikasi.
+
+Multi User
+
+Semua tabel memiliki kolom:
+
+UserID
+
+Saat login:
+
+Aplikasi otomatis memfilter data berdasarkan UserID.
+
+Sehingga:
+
+User A
+
+hanya melihat
+
+Data User A.
+
+User B
+
+hanya melihat
+
+Data User B.
+
+Walaupun menggunakan Spreadsheet yang sama.
+
+CRUD
+
+Semua CRUD terhubung langsung ke Spreadsheet.
+
+Fitur:
+
+Tambah
+Edit
+Hapus
+Detail
+Search
+Filter
+Pagination
+PWA
+
+Harus dapat:
+
+✅ Install di Android
+
+✅ Install di iPhone
+
+✅ Install di Laptop
+
+Memiliki:
+
+manifest.json
+service-worker.js
+offline cache dasar
+icon aplikasi
+TradingView
+
+Menggunakan TradingView Widget gratis.
+
+Tidak menggunakan API berbayar.
+
+Widget hanya sebagai tampilan chart.
+
+UI / UX
+
+Menggunakan Tailwind CSS.
+
+Konsep desain:
+
+Modern
+Clean
+Minimalis
+Premium
+Responsive
+Mobile First
+Warna
+Primary : Indigo
+Secondary : Slate
+Success : Emerald
+Danger : Rose
+Warning : Amber
+Background : Gray-50
+Komponen
+Navbar
+Sidebar
+Dashboard Cards
+Data Table
+Modal CRUD
+Toast Notification
+Loading Spinner
+Search Box
+Filter Dropdown
+Pagination
+Floating Action Button (Mobile)
+Struktur Folder
+Project/
+│
+├── appsscript.gs
+├── auth.gs
+├── trading.gs
+├── finance.gs
+├── permission.gs
+├── dashboard.gs
+├── utils.gs
+│
+├── index.html
+├── dashboard.html
+├── trading.html
+├── finance.html
+├── login.html
+│
+├── css/
+│   └── style.css
+│
+├── js/
+│   ├── dashboard.js
+│   ├── trading.js
+│   ├── finance.js
+│   ├── auth.js
+│   └── helper.js
+│
+├── manifest.json
+└── service-worker.js
+Keamanan
+Password Hash
+Session Login
+Validasi Backend Apps Script
+Validasi Permission
+Sanitasi Input
+Mencegah akses langsung ke data user lain
+Prompt 1 — Setup Project
+
+Buatkan project Google Apps Script menggunakan HTML, CSS, JavaScript dan Tailwind CSS. Terapkan arsitektur modular sesuai struktur folder. Jadikan aplikasi sebagai Progressive Web App (PWA) lengkap dengan manifest.json dan service-worker.js agar dapat diinstal di Android, iPhone, dan desktop. Gunakan desain modern, clean, premium, responsive, dan mobile-first.
+
+Prompt 2 — Database
+
+Buat struktur Google Spreadsheet sebagai database dengan sheet Users, Trading, Finance, Permission, dan Setting. Semua data Trading dan Finance wajib memiliki kolom UserID sebagai relasi. Buat fungsi Apps Script untuk membaca, menambah, mengubah, dan menghapus data.
+
+Prompt 3 — Login
+
+Buat sistem login multi-user menggunakan Google Apps Script. Password harus di-hash, menggunakan session login, dan setiap pengguna memiliki UserID unik. Setelah login berhasil, tampilkan hanya data yang sesuai dengan UserID pengguna tersebut.
+
+Prompt 4 — Role & Permission
+
+Implementasikan dua role, yaitu User dan Super Admin. User hanya dapat mengakses data miliknya sendiri. Super Admin dapat mengelola seluruh user, seluruh data, serta mengatur permission melalui halaman admin. Permission disimpan di Spreadsheet dan divalidasi di backend sebelum setiap proses CRUD dijalankan.
+
+Prompt 5 — Dashboard
+
+Buat halaman Dashboard dengan ringkasan statistik trading dan keuangan, kartu informasi (Total Profit, Total Loss, Win Rate, Saldo, Pengeluaran), grafik perkembangan, dan aktivitas terbaru. Desain menggunakan Tailwind CSS dengan tampilan profesional.
+
+Prompt 6 — Progress Trading
+
+Buat modul Progress Trading lengkap dengan fitur CRUD, tabel data, pencarian, filter, pagination, modal input/edit, upload screenshot, statistik sederhana, dan integrasi TradingView Widget gratis sebagai tampilan chart.
+
+Prompt 7 — Kelola Keuangan
+
+Buat modul Kelola Keuangan dengan fitur CRUD, kategori transaksi, pemasukan/pengeluaran, pencarian, filter, pagination, serta ringkasan saldo dan pengeluaran. Semua data harus terhubung ke Spreadsheet dan difilter berdasarkan UserID.
+
+Prompt 8 — Penyempurnaan
+
+Rapikan seluruh project dengan clean code, modular, reusable component, validasi frontend dan backend, loading state, toast notification, responsive layout menggunakan Tailwind CSS, serta optimasi performa Google Apps Script. Pastikan seluruh fitur berjalan tanpa error dan siap digunakan sebagai aplikasi produksi.

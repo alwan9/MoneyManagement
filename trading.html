@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Progress Trading - MoneyM</title>
+  <link rel="manifest" href="manifest.json">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+    }
+  </script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 antialiased min-h-screen flex flex-col transition-colors duration-200">
+
+  <!-- Header Navbar -->
+  <header class="sticky top-0 z-40 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center font-bold text-xl shadow-md shadow-indigo-600/30">
+          <iconify-icon icon="lucide:wallet" class="text-xl"></iconify-icon>
+        </div>
+        <div>
+          <h1 class="text-base font-extrabold text-zinc-900 dark:text-zinc-100 tracking-tight leading-none">MoneyM</h1>
+          <p class="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium">Trading Module</p>
+        </div>
+      </div>
+
+      <nav class="hidden md:flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800/80 p-1 rounded-xl border border-zinc-200 dark:border-zinc-700/60">
+        <a href="dashboard.html" class="px-4 py-2 text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition flex items-center gap-1.5">
+          <iconify-icon icon="lucide:layout-dashboard"></iconify-icon>
+          <span>Dashboard</span>
+        </a>
+        <a href="trading.html" class="px-4 py-2 text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-white dark:bg-zinc-900 rounded-lg shadow-sm flex items-center gap-1.5">
+          <iconify-icon icon="lucide:candlestick-chart"></iconify-icon>
+          <span>Progress Trading</span>
+        </a>
+        <a href="finance.html" class="px-4 py-2 text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition flex items-center gap-1.5">
+          <iconify-icon icon="lucide:wallet-cards"></iconify-icon>
+          <span>Kelola Keuangan</span>
+        </a>
+        <a id="nav-admin-link" href="admin.html" class="hidden px-4 py-2 text-xs font-semibold text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded-lg transition flex items-center gap-1.5">
+          <iconify-icon icon="lucide:shield-check"></iconify-icon>
+          <span>Panel Admin</span>
+        </a>
+      </nav>
+
+      <div class="flex items-center gap-3">
+        <button id="btn-privacy-toggle" onclick="togglePrivacyMode()" class="p-2 text-zinc-500 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition text-base flex items-center justify-center" title="Privacy Mode (Sembunyikan Saldo)">
+          <iconify-icon icon="lucide:eye" class="text-lg text-zinc-400"></iconify-icon>
+        </button>
+
+        <button onclick="requestNotificationPermission()" class="p-2 text-zinc-500 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition text-base flex items-center justify-center" title="Aktifkan Notifikasi iPhone / PWA">
+          <iconify-icon icon="lucide:bell" class="text-lg text-amber-400"></iconify-icon>
+        </button>
+
+        <button id="btn-theme-toggle" onclick="toggleTheme()" class="p-2 text-zinc-500 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition text-base flex items-center justify-center" title="Toggle Theme">
+          <iconify-icon icon="lucide:moon" class="text-lg text-indigo-300"></iconify-icon>
+        </button>
+
+        <div class="text-right hidden sm:block border-l border-zinc-200 dark:border-zinc-800 pl-3">
+          <p id="user-display-name" class="text-xs font-bold text-zinc-800 dark:text-zinc-200">User</p>
+          <p id="user-display-role" class="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold uppercase tracking-wider">Member</p>
+        </div>
+        <button onclick="logout()" title="Keluar" class="p-2 text-zinc-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded-xl transition flex items-center justify-center">
+          <iconify-icon icon="lucide:log-out" class="text-lg"></iconify-icon>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+    <!-- Top Action Bar & Stat Summary -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-zinc-900 p-6 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
+      <div>
+        <h2 class="text-xl font-extrabold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+          <iconify-icon icon="lucide:candlestick-chart" class="text-indigo-500"></iconify-icon>
+          <span>Jurnal Progress Trading</span>
+        </h2>
+        <p class="text-xs text-zinc-400">Catat posisi RUNNING & CLOSED dengan kalkulasi otomatis SL (-50p) & TP (+100p).</p>
+      </div>
+      <button onclick="openTradingModal()"
+        class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-2xl shadow-lg shadow-indigo-600/30 transition flex items-center justify-center gap-2">
+        <iconify-icon icon="lucide:plus" class="text-base"></iconify-icon>
+        <span>+ Entry Posisi Baru</span>
+      </button>
+    </div>
+
+    <!-- Quick Stats Bar -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="bg-white dark:bg-zinc-900 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-center">
+        <span class="text-[11px] font-bold text-zinc-400 uppercase">Jumlah Trade</span>
+        <p id="stat-trade-count" class="text-lg font-bold text-zinc-800 dark:text-zinc-100">0 Trade</p>
+      </div>
+      <div class="bg-white dark:bg-zinc-900 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-center">
+        <span class="text-[11px] font-bold text-zinc-400 uppercase">Win Rate (Closed)</span>
+        <p id="stat-winrate" class="text-lg font-bold text-indigo-500">0%</p>
+      </div>
+      <div class="bg-white dark:bg-zinc-900 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-center">
+        <span class="text-[11px] font-bold text-zinc-400 uppercase">Net Realized Profit/Loss</span>
+        <p id="stat-total-pl" class="text-lg font-bold text-emerald-500">Rp 0</p>
+      </div>
+    </div>
+
+    <!-- TradingView Embedded Widget Container -->
+    <div class="bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 p-4 shadow-sm overflow-hidden">
+      <div class="flex items-center justify-between mb-3 px-2">
+        <h3 class="text-sm font-bold text-zinc-800 dark:text-zinc-100 flex items-center gap-2">
+          <iconify-icon icon="lucide:line-chart" class="text-indigo-500"></iconify-icon>
+          <span>Live Chart (TradingView 1-Min)</span>
+        </h3>
+        <span class="text-[11px] text-zinc-400">Default: OANDA:XAUUSD</span>
+      </div>
+      <div id="tradingview-widget-container" class="w-full h-[420px] rounded-2xl bg-zinc-950 overflow-hidden">
+        <!-- Script TradingView disisipkan via js/trading.js -->
+      </div>
+    </div>
+
+    <!-- Filter & Table Section -->
+    <div class="bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 p-6 shadow-sm space-y-4">
+      
+      <!-- Filter Bar -->
+      <div class="flex flex-col sm:flex-row gap-3 justify-between">
+        <div class="relative w-full sm:w-64">
+          <input type="text" id="search-trading" oninput="applyFilterAndSearch()" placeholder="Cari Pair / Catatan..."
+            class="px-4 py-2 pl-9 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full">
+          <iconify-icon icon="lucide:search" class="absolute left-3 top-2.5 text-zinc-400 text-sm pointer-events-none"></iconify-icon>
+        </div>
+        
+        <select id="filter-buysell" onchange="applyFilterAndSearch()"
+          class="px-4 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <option value="ALL">Semua Tipe (Buy/Sell)</option>
+          <option value="BUY">BUY</option>
+          <option value="SELL">SELL</option>
+        </select>
+      </div>
+
+      <!-- Data Table -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-zinc-50 dark:bg-zinc-950/60 text-[11px] uppercase font-bold text-zinc-400 border-b border-zinc-200 dark:border-zinc-800">
+              <th class="px-4 py-3">Tanggal</th>
+              <th class="px-4 py-3">Pair / Saham</th>
+              <th class="px-4 py-3">Tipe & Status</th>
+              <th class="px-4 py-3">Entry</th>
+              <th class="px-4 py-3">SL</th>
+              <th class="px-4 py-3">TP</th>
+              <th class="px-4 py-3">Exit</th>
+              <th class="px-4 py-3">Lot</th>
+              <th class="px-4 py-3">Profit/Loss</th>
+              <th class="px-4 py-3">R:R</th>
+              <th class="px-4 py-3 text-right">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="trading-table-body">
+            <!-- Rendered by trading.js -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination Container -->
+      <div id="trading-pagination" class="pt-2"></div>
+
+    </div>
+
+  </main>
+
+  <!-- Modal CRUD Form Trading -->
+  <div id="trading-modal" class="fixed inset-0 bg-zinc-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 w-full max-w-lg rounded-3xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+      
+      <div class="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-3">
+        <div>
+          <h3 id="modal-trading-title" class="text-base font-bold text-zinc-900 dark:text-zinc-100">Tambah Progress Trading</h3>
+          <p class="text-[11px] text-zinc-400">SL (-50 pips) & TP (+100 pips) terhitung otomatis dan dapat diubah.</p>
+        </div>
+        <button onclick="closeTradingModal()" class="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200">
+          <iconify-icon icon="lucide:x" class="text-lg"></iconify-icon>
+        </button>
+      </div>
+
+      <form id="trading-form" onsubmit="saveTradingForm(event)" class="space-y-4 text-xs">
+        
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Tanggal</label>
+            <input type="date" id="input-tanggal" required class="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-zinc-900 dark:text-zinc-100">
+          </div>
+          <div>
+            <label class="block font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Pair / Symbol</label>
+            <input type="text" id="input-pair" required value="XAUUSD" onchange="startLiveTickerPolling(); autoCalculateSLTP(true);" placeholder="XAUUSD" class="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-zinc-900 dark:text-zinc-100">
+          </div>
+        </div>
+
+        <!-- Realtime Price Header & Entry, SL, TP, Exit Grid -->
+        <div class="p-3 bg-zinc-50 dark:bg-zinc-950/80 rounded-2xl border border-zinc-200 dark:border-zinc-800/80 space-y-3">
+          <div class="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-2">
+            <span class="font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
+              <iconify-icon icon="lucide:zap" class="text-amber-500"></iconify-icon>
+              <span>Harga Realtime & Parameter Order</span>
+            </span>
+            <div class="flex gap-1.5 items-center">
+              <button type="button" onclick="autoCalculateSLTP(true)" class="px-2 py-1 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 font-bold rounded-lg border border-indigo-500/30 transition text-[10px] flex items-center gap-1" title="Hitung Ulang SL (-50p) & TP (+100p)">
+                <iconify-icon icon="lucide:calculator"></iconify-icon>
+                <span>Auto SL/TP</span>
+              </button>
+              <button type="button" onclick="useLivePrice()" id="live-price-badge" class="px-2.5 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 font-bold rounded-lg border border-emerald-500/30 transition flex items-center gap-1 text-[11px]">
+                <iconify-icon icon="lucide:refresh-cw" id="live-price-spinner" class="animate-spin text-xs"></iconify-icon>
+                <span id="live-price-val">Live: Fetching...</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            <div>
+              <label class="block font-semibold text-zinc-700 dark:text-zinc-300 mb-1 text-[11px]">Entry Price</label>
+              <input type="number" step="any" id="input-entry" oninput="autoCalculateSLTP()" placeholder="2350.50" class="w-full px-2.5 py-1.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-zinc-900 dark:text-zinc-100 font-bold">
+            </div>
+            <div>
+              <label class="block font-semibold text-rose-500 mb-1 text-[11px]">Stop Loss (-50p)</label>
+              <input type="number" step="any" id="input-sl" oninput="this.dataset.manual='true'" placeholder="2345.50" class="w-full px-2.5 py-1.5 bg-white dark:bg-zinc-900 border border-rose-500/30 rounded-xl text-rose-500 font-medium">
+            </div>
+            <div>
+              <label class="block font-semibold text-emerald-500 mb-1 text-[11px]">Take Profit (+100p)</label>
+              <input type="number" step="any" id="input-tp" oninput="this.dataset.manual='true'" placeholder="2360.50" class="w-full px-2.5 py-1.5 bg-white dark:bg-zinc-900 border border-emerald-500/30 rounded-xl text-emerald-500 font-medium">
+            </div>
+            <div>
+              <label class="block font-semibold text-zinc-700 dark:text-zinc-300 mb-1 text-[11px]">Exit Price</label>
+              <input type="number" step="any" id="input-exit" placeholder="Floating (Pending)" class="w-full px-2.5 py-1.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-zinc-900 dark:text-zinc-100">
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Tipe Posisi</label>
+            <select id="input-buysell" onchange="autoCalculateSLTP(true)" class="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-zinc-900 dark:text-zinc-100 font-bold">
+              <option value="BUY">BUY</option>
+              <option value="SELL">SELL</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Lot / Posisi</label>
+            <input type="number" step="any" id="input-lot" value="0.01" placeholder="0.01" class="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-zinc-900 dark:text-zinc-100 font-bold">
+          </div>
+          <div>
+            <label class="block font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Risk : Reward</label>
+            <select id="input-rr" onchange="autoCalculateSLTP(true)" class="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-zinc-900 dark:text-zinc-100 font-bold">
+              <option value="1:1">1:1 (TP +50p)</option>
+              <option value="1:2" selected>1:2 (TP +100p)</option>
+              <option value="1:3">1:3 (TP +150p)</option>
+              <option value="1:4">1:4 (TP +200p)</option>
+              <option value="1:5">1:5 (TP +250p)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Position Status Selector & Outcome Toggle -->
+        <div class="p-3 bg-zinc-50 dark:bg-zinc-950/80 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3">
+          
+          <div>
+            <label class="block font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Status Posisi Trading</label>
+            <select id="input-status" onchange="toggleStatusMode()" class="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs text-zinc-900 dark:text-zinc-100 font-bold">
+              <option value="RUNNING">⏳ RUNNING (Posisi Sedang Berjalan)</option>
+              <option value="CLOSED">🏁 CLOSED (Posisi Sudah Close / Selesai)</option>
+            </select>
+          </div>
+
+          <div id="outcome-container" class="space-y-2 pt-2 border-t border-zinc-200 dark:border-zinc-800 transition">
+            <label class="block font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Hasil Trade (Profit / Loss)</label>
+            <div class="flex gap-2 mb-2">
+              <button type="button" id="btn-pl-profit" onclick="setPLOutcome('PROFIT')" class="flex-1 py-2 font-bold rounded-xl bg-emerald-600 text-white transition shadow-sm flex items-center justify-center gap-1">
+                <iconify-icon icon="lucide:trending-up"></iconify-icon>
+                <span>PROFIT</span>
+              </button>
+              <button type="button" id="btn-pl-loss" onclick="setPLOutcome('LOSS')" class="flex-1 py-2 font-semibold rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:text-zinc-300 transition flex items-center justify-center gap-1">
+                <iconify-icon icon="lucide:trending-down"></iconify-icon>
+                <span>LOSS</span>
+              </button>
+            </div>
+
+            <div>
+              <label class="block font-semibold text-zinc-500 mb-1 text-[11px]">Nominal Profit / Loss (IDR)</label>
+              <div class="flex gap-1">
+                <input type="number" id="input-profitloss" placeholder="500000" class="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-zinc-900 dark:text-zinc-100 font-bold">
+                <button type="button" onclick="appendThousands()" class="px-3 py-1 bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-300 font-bold rounded-xl hover:bg-indigo-100 dark:hover:bg-indigo-900 transition whitespace-nowrap" title="Tambah 000">+000</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div>
+          <label class="block font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Catatan Evaluasi</label>
+          <textarea id="input-catatan" rows="2" placeholder="Alasan entry, setup candle, emosi trading..." class="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-zinc-900 dark:text-zinc-100"></textarea>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-3 border-t border-zinc-200 dark:border-zinc-800">
+          <button type="button" onclick="closeTradingModal()" class="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 font-semibold rounded-xl text-zinc-600 dark:text-zinc-300">Batal</button>
+          <button type="submit" class="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-500 flex items-center gap-1.5">
+            <iconify-icon icon="lucide:save"></iconify-icon>
+            <span>Simpan Data</span>
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- Mobile Bottom Floating Bar -->
+  <div class="md:hidden fixed bottom-4 left-4 right-4 z-40">
+    <div class="bg-zinc-900/90 backdrop-blur-md text-white p-2 rounded-2xl shadow-2xl border border-zinc-800 flex items-center justify-around">
+      <a href="dashboard.html" class="flex flex-col items-center gap-1 px-4 py-2 text-zinc-400 font-medium text-[11px]">
+        <iconify-icon icon="lucide:layout-dashboard" class="text-base"></iconify-icon> Dashboard
+      </a>
+      <a href="trading.html" class="flex flex-col items-center gap-1 px-4 py-2 text-indigo-400 font-bold text-[11px]">
+        <iconify-icon icon="lucide:candlestick-chart" class="text-base"></iconify-icon> Trading
+      </a>
+      <a href="finance.html" class="flex flex-col items-center gap-1 px-3 py-1.5 text-zinc-400 font-medium text-[11px]">
+        <iconify-icon icon="lucide:wallet-cards" class="text-base"></iconify-icon> Keuangan
+      </a>
+      <a id="mobile-admin-link" href="admin.html" class="hidden flex flex-col items-center gap-1 px-3 py-1.5 text-amber-400 font-medium text-[11px]">
+        <iconify-icon icon="lucide:shield-check" class="text-base"></iconify-icon> Admin
+      </a>
+    </div>
+  </div>
+
+  <script src="js/helper.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/trading.js"></script>
+</body>
+</html>
