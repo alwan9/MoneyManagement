@@ -27,14 +27,24 @@
       "short_name": "+ Trade",
       "description": "Catat posisi trading baru",
       "url": "./trading.html?action=add",
-      "icons": [{ "src": "https://api.iconify.design/lucide:candlestick-chart.svg?color=%234f46e5", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "https://api.iconify.design/lucide:candlestick-chart.svg?color=%234f46e5",
+          "sizes": "192x192"
+        }
+      ]
     },
     {
       "name": "Catat Pengeluaran",
       "short_name": "+ Keuangan",
       "description": "Catat transaksi keuangan baru",
       "url": "./finance.html?action=add",
-      "icons": [{ "src": "https://api.iconify.design/lucide:wallet-cards.svg?color=%2310b981", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "https://api.iconify.design/lucide:wallet-cards.svg?color=%2310b981",
+          "sizes": "192x192"
+        }
+      ]
     }
   ]
 }

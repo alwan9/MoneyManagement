@@ -9,14 +9,18 @@ body {
 
 /* Default Dark Mode Styling (Zinc Palette) */
 html.dark body {
-  background-color: #09090b; /* zinc-950 */
-  color: #f4f4f5; /* zinc-100 */
+  background-color: #09090b;
+  /* zinc-950 */
+  color: #f4f4f5;
+  /* zinc-100 */
 }
 
 /* Light Mode Styling (Zinc Palette) */
 html:not(.dark) body {
-  background-color: #fafafa; /* zinc-50 */
-  color: #18181b; /* zinc-900 */
+  background-color: #fafafa;
+  /* zinc-50 */
+  color: #18181b;
+  /* zinc-900 */
 }
 
 /* Glassmorphism Classes */
@@ -114,6 +118,7 @@ html:not(.dark) .toast-info {
     opacity: 0;
     transform: translateX(100%);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -134,27 +139,33 @@ html:not(.dark) .toast-info {
 }
 
 html.dark ::-webkit-scrollbar-track {
-  background: #18181b; /* zinc-900 */
+  background: #18181b;
+  /* zinc-900 */
 }
 
 html.dark ::-webkit-scrollbar-thumb {
-  background: #3f3f46; /* zinc-700 */
+  background: #3f3f46;
+  /* zinc-700 */
   border-radius: 4px;
 }
 
 html.dark ::-webkit-scrollbar-thumb:hover {
-  background: #52525b; /* zinc-600 */
+  background: #52525b;
+  /* zinc-600 */
 }
 
 html:not(.dark) ::-webkit-scrollbar-track {
-  background: #f4f4f5; /* zinc-100 */
+  background: #f4f4f5;
+  /* zinc-100 */
 }
 
 html:not(.dark) ::-webkit-scrollbar-thumb {
-  background: #d4d4d8; /* zinc-300 */
+  background: #d4d4d8;
+  /* zinc-300 */
   border-radius: 4px;
 }
 
 html:not(.dark) ::-webkit-scrollbar-thumb:hover {
-  background: #a1a1aa; /* zinc-400 */
+  background: #a1a1aa;
+  /* zinc-400 */
 }

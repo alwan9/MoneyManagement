@@ -97,8 +97,8 @@ function applyFinanceFilterAndSearch() {
   const filterJenis = document.getElementById('filter-jenis')?.value || 'ALL';
 
   financeState.filteredItems = financeState.items.filter(item => {
-    const matchSearch = (item.Kategori || '').toLowerCase().includes(search) || 
-                        (item.Keterangan || '').toLowerCase().includes(search);
+    const matchSearch = (item.Kategori || '').toLowerCase().includes(search) ||
+      (item.Keterangan || '').toLowerCase().includes(search);
     const matchJenis = filterJenis === 'ALL' || item.Jenis === filterJenis;
     return matchSearch && matchJenis;
   });
@@ -152,8 +152,8 @@ function renderFinanceTable() {
   tbody.innerHTML = pageItems.map(item => {
     const isIn = item.Jenis === 'Pemasukan';
     const isRecurring = item.Keterangan && item.Keterangan.includes('[Tagihan Rutin]');
-    const badgeColor = isIn 
-      ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30' 
+    const badgeColor = isIn
+      ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30'
       : 'bg-rose-500/10 text-rose-500 border-rose-500/30';
 
     const formattedNominal = isPrivacyMode() ? 'Rp •••••••' : ((isIn ? '+' : '-') + formatIDR(item.Nominal));

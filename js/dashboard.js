@@ -67,7 +67,7 @@ async function loadDashboardData() {
 
   if (res.success && res.data) {
     const d = res.data;
-    
+
     const totalProfitEl = document.getElementById('dash-profit');
     const totalLossEl = document.getElementById('dash-loss');
     const winRateEl = document.getElementById('dash-winrate');

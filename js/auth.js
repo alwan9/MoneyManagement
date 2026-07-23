@@ -143,8 +143,8 @@ function localMockEngine(action, payload) {
 
       switch (action) {
         case 'login': {
-          const user = users.find(u => 
-            u.Username.toLowerCase() === (payload.username || '').toLowerCase() && 
+          const user = users.find(u =>
+            u.Username.toLowerCase() === (payload.username || '').toLowerCase() &&
             u.Password === payload.password
           );
           if (user) {

@@ -21,13 +21,13 @@ function toggleTheme() {
   const current = getTheme();
   const nextTheme = current === 'dark' ? 'light' : 'dark';
   localStorage.setItem('MONEYM_THEME', nextTheme);
-  
+
   if (nextTheme === 'dark') {
     document.documentElement.classList.add('dark');
   } else {
     document.documentElement.classList.remove('dark');
   }
-  
+
   updateThemeIcon(nextTheme);
   showToast(`Mode tampilan diubah ke ${nextTheme.toUpperCase()}`, 'info');
 
@@ -40,8 +40,8 @@ function toggleTheme() {
 function updateThemeIcon(theme) {
   const btn = document.getElementById('btn-theme-toggle');
   if (!btn) return;
-  btn.innerHTML = theme === 'dark' 
-    ? '<iconify-icon icon="lucide:moon" class="text-lg text-indigo-300 align-middle"></iconify-icon>' 
+  btn.innerHTML = theme === 'dark'
+    ? '<iconify-icon icon="lucide:moon" class="text-lg text-indigo-300 align-middle"></iconify-icon>'
     : '<iconify-icon icon="lucide:sun" class="text-lg text-amber-500 align-middle"></iconify-icon>';
   btn.title = theme === 'dark' ? 'Beralih ke Light Mode' : 'Beralih ke Dark Mode';
 }
@@ -83,8 +83,8 @@ function togglePrivacyMode() {
 function updatePrivacyIcon(active) {
   const btn = document.getElementById('btn-privacy-toggle');
   if (!btn) return;
-  btn.innerHTML = active 
-    ? '<iconify-icon icon="lucide:eye-off" class="text-lg text-amber-400 align-middle"></iconify-icon>' 
+  btn.innerHTML = active
+    ? '<iconify-icon icon="lucide:eye-off" class="text-lg text-amber-400 align-middle"></iconify-icon>'
     : '<iconify-icon icon="lucide:eye" class="text-lg text-zinc-400 align-middle"></iconify-icon>';
   btn.title = active ? 'Tampilkan Nominal Saldo' : 'Sembunyikan Nominal Saldo';
 }
@@ -148,7 +148,7 @@ function showToast(message, type = 'info') {
 
   const toast = document.createElement('div');
   toast.className = `toast toast-${type}`;
-  
+
   let iconHtml = '<iconify-icon icon="lucide:info" class="text-indigo-500 text-lg align-middle"></iconify-icon>';
   if (type === 'success') iconHtml = '<iconify-icon icon="lucide:check-circle-2" class="text-emerald-500 text-lg align-middle"></iconify-icon>';
   if (type === 'error') iconHtml = '<iconify-icon icon="lucide:alert-circle" class="text-rose-500 text-lg align-middle"></iconify-icon>';
