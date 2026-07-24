@@ -79,6 +79,7 @@ function appendFinanceThousands() {
   } else {
     input.value = val + '000';
   }
+  updateNominalPreview('input-nominal', 'nominal-preview');
 }
 
 // Load Data Keuangan

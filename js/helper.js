@@ -548,3 +548,48 @@ if ('serviceWorker' in navigator) {
       .catch((err) => console.warn('[PWA] Service Worker registration failed:', err));
   });
 }
+
+/**
+ * Format Terbilang Rupiah & Pemisah Ribuan (.) di Bawah Input Field
+ */
+function formatTerbilangRupiah(num) {
+  const absNum = Math.abs(Number(num) || 0);
+  if (!absNum || absNum === 0) return '';
+
+  let formattedNum = 'Rp ' + absNum.toLocaleString('id-ID');
+  let wordLabel = '';
+
+  if (absNum >= 1000000000) {
+    const miliar = (absNum / 1000000000).toLocaleString('id-ID', { maximumFractionDigits: 2 });
+    wordLabel = `${miliar} Miliar Rupiah`;
+  } else if (absNum >= 1000000) {
+    const juta = (absNum / 1000000).toLocaleString('id-ID', { maximumFractionDigits: 2 });
+    wordLabel = `${juta} Juta Rupiah`;
+  } else if (absNum >= 1000) {
+    const ribu = (absNum / 1000).toLocaleString('id-ID', { maximumFractionDigits: 2 });
+    wordLabel = `${ribu} Ribu Rupiah`;
+  } else {
+    wordLabel = `${absNum} Rupiah`;
+  }
+
+  return `➔ ${formattedNum} (${wordLabel})`;
+}
+
+/**
+ * Update elemen preview terbilang rupiah di bawah input field
+ * @param {string} inputId  - ID dari elemen <input>
+ * @param {string} previewId - ID dari elemen <p> preview
+ */
+function updateNominalPreview(inputId, previewId) {
+  const input = document.getElementById(inputId);
+  const preview = document.getElementById(previewId);
+  if (!input || !preview) return;
+
+  const val = input.value;
+  if (!val || Number(val) === 0) {
+    preview.textContent = '';
+    return;
+  }
+  preview.textContent = formatTerbilangRupiah(val);
+}
+

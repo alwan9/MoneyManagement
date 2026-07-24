@@ -331,9 +331,10 @@
             <div>
               <label class="block font-semibold text-zinc-500 mb-1 text-[11px]">Nominal Profit / Loss (IDR)</label>
               <div class="flex gap-1">
-                <input type="number" id="input-profitloss" placeholder="500000" class="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-zinc-900 dark:text-zinc-100 font-bold">
+                <input type="number" id="input-profitloss" oninput="updateNominalPreview('input-profitloss', 'profitloss-preview')" placeholder="500000" class="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-zinc-900 dark:text-zinc-100 font-bold">
                 <button type="button" onclick="appendThousands()" class="px-3 py-1 bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-300 font-bold rounded-xl hover:bg-indigo-100 dark:hover:bg-indigo-900 transition whitespace-nowrap" title="Tambah 000">+000</button>
               </div>
+              <p id="profitloss-preview" class="text-[11px] font-extrabold text-indigo-500 dark:text-indigo-400 mt-1 min-h-[1.2rem] transition-all"></p>
             </div>
           </div>
 

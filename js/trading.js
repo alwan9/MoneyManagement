@@ -316,7 +316,7 @@ function autoCalculateSLTP(force = false) {
 
   const pair = (document.getElementById('input-pair')?.value || 'XAUUSD').toUpperCase();
   const buySell = document.getElementById('input-buysell')?.value || 'BUY';
-  const rrVal = document.getElementById('input-rr')?.value || '1:2';
+  const rrVal = String(document.getElementById('input-rr')?.value || '1:2');
   const slInput = document.getElementById('input-sl');
   const tpInput = document.getElementById('input-tp');
 
@@ -329,6 +329,8 @@ function autoCalculateSLTP(force = false) {
   let rrRatio = 2;
   if (rrVal.includes(':')) {
     rrRatio = parseFloat(rrVal.split(':')[1]) || 2;
+  } else if (!isNaN(parseFloat(rrVal))) {
+    rrRatio = parseFloat(rrVal) || 2;
   }
 
   let pipSize = 0.0001;
@@ -491,11 +493,13 @@ function getOrCalculateSLTP(item) {
     const entryVal = Number(item.Entry);
     const pair = (item.Pair || 'XAUUSD').toUpperCase();
     const buySell = item.BuySell || 'BUY';
-    const rrVal = item.RR || '1:2';
+    const rrVal = String(item.RR || '1:2');
 
     let rrRatio = 2;
     if (rrVal.includes(':')) {
       rrRatio = parseFloat(rrVal.split(':')[1]) || 2;
+    } else if (!isNaN(parseFloat(rrVal))) {
+      rrRatio = parseFloat(rrVal) || 2;
     }
 
     let pipSize = 0.0001;
@@ -651,6 +655,7 @@ function appendThousands() {
   } else {
     input.value = val + '000';
   }
+  updateNominalPreview('input-profitloss', 'profitloss-preview');
 }
 
 // Profit vs Loss Toggle Handler (Otomatis atur Status & Exit Price jika diklik)
