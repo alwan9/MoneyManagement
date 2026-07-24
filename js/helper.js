@@ -332,39 +332,82 @@ function initPwaInstallBanner() {
   });
 }
 
+let pwaInstallTimer = null;
+
 function showPwaInstallBannerUI() {
   let banner = document.getElementById('pwa-install-banner');
   if (!banner) {
     banner = document.createElement('div');
     banner.id = 'pwa-install-banner';
-    banner.className = 'fixed bottom-20 left-4 right-4 md:left-auto md:right-6 md:bottom-6 md:w-96 bg-zinc-900/95 backdrop-blur-xl border border-indigo-500/40 p-4 rounded-2xl shadow-2xl z-50 text-white flex items-center justify-between gap-3 animate-bounce-short';
+    banner.className = 'fixed bottom-20 left-4 right-4 md:left-auto md:right-6 md:bottom-6 md:w-96 bg-zinc-900/95 backdrop-blur-xl border border-indigo-500/50 rounded-2xl shadow-2xl z-50 text-white overflow-hidden transition-all duration-500 transform translate-y-12 opacity-0 pointer-events-auto';
     banner.innerHTML = `
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center font-bold text-xl shadow-md text-white">
-          <iconify-icon icon="lucide:smartphone-charging"></iconify-icon>
+      <div class="p-4 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center font-bold text-xl shadow-md text-white shrink-0">
+            <iconify-icon icon="lucide:smartphone-charging" class="text-xl"></iconify-icon>
+          </div>
+          <div>
+            <h4 class="text-xs font-extrabold text-white flex items-center gap-1.5">
+              <span>Install MoneyM App</span>
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+            </h4>
+            <p class="text-[11px] text-zinc-400">Akses cepat & fleksibel dari layar HP</p>
+          </div>
         </div>
-        <div>
-          <h4 class="text-xs font-bold text-white">Install MoneyM App</h4>
-          <p class="text-[11px] text-zinc-400">Akses cepat & fleksibel dari layar HP</p>
+        <div class="flex items-center gap-1.5 shrink-0">
+          <button onclick="triggerPwaInstall()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow-lg transition active:scale-95">
+            Install
+          </button>
+          <button onclick="hidePwaInstallBannerUI()" class="p-1.5 text-zinc-400 hover:text-white rounded-lg transition">
+            <iconify-icon icon="lucide:x" class="text-base"></iconify-icon>
+          </button>
         </div>
       </div>
-      <div class="flex items-center gap-1.5">
-        <button onclick="triggerPwaInstall()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow transition">
-          Install
-        </button>
-        <button onclick="hidePwaInstallBannerUI()" class="p-1.5 text-zinc-400 hover:text-white">
-          <iconify-icon icon="lucide:x" class="text-base"></iconify-icon>
-        </button>
+      <div class="h-1 bg-zinc-800 w-full overflow-hidden">
+        <div id="pwa-timer-bar" class="h-full bg-indigo-500 animate-timer-30s"></div>
       </div>
     `;
     document.body.appendChild(banner);
   }
+
+  if (pwaInstallTimer) clearTimeout(pwaInstallTimer);
+
   banner.classList.remove('hidden');
+
+  // Trigger smooth enter animation
+  setTimeout(() => {
+    banner.classList.remove('translate-y-12', 'opacity-0');
+    banner.classList.add('translate-y-0', 'opacity-100');
+  }, 50);
+
+  // Reset & trigger 30s countdown bar animation
+  const timerBar = document.getElementById('pwa-timer-bar');
+  if (timerBar) {
+    timerBar.classList.remove('animate-timer-30s');
+    void timerBar.offsetWidth; // Force DOM reflow
+    timerBar.classList.add('animate-timer-30s');
+  }
+
+  // Auto-hide after 30 seconds
+  pwaInstallTimer = setTimeout(() => {
+    hidePwaInstallBannerUI();
+  }, 30000);
 }
 
 function hidePwaInstallBannerUI() {
+  if (pwaInstallTimer) {
+    clearTimeout(pwaInstallTimer);
+    pwaInstallTimer = null;
+  }
   const banner = document.getElementById('pwa-install-banner');
-  if (banner) banner.classList.add('hidden');
+  if (banner) {
+    // Smooth exit animation
+    banner.classList.remove('translate-y-0', 'opacity-100');
+    banner.classList.add('translate-y-12', 'opacity-0');
+    setTimeout(() => {
+      banner.classList.add('hidden');
+    }, 500);
+  }
 }
 
 async function triggerPwaInstall() {
@@ -378,6 +421,122 @@ async function triggerPwaInstall() {
     hidePwaInstallBannerUI();
   } else {
     showToast('Gunakan opsi "Tambahkan ke Layar Utama" pada menu browser HP Anda.', 'info');
+  }
+}
+
+/**
+ * Dynamic Permission Guard & Menu Visibility Controller
+ */
+function applyPermissionGuards(pageName) {
+  const session = getSession();
+  if (!session) return;
+
+  const isSA = session.role === 'Super Admin' || session.role === 'admin' || (session.username && session.username.toLowerCase() === 'admin');
+  const perms = session.permissions || {
+    Dashboard: true,
+    Trading: true,
+    Finance: true,
+    CRUDTrading: true,
+    CRUDFinance: true
+  };
+
+  // 1. Sembunyikan Tombol Navigasi Desktop & Mobile yang tidak diberi izin
+  const navDash = document.getElementById('nav-dash-link');
+  const navTrade = document.getElementById('nav-trade-link');
+  const navFin = document.getElementById('nav-fin-link');
+  const navAdmin = document.getElementById('nav-admin-link');
+
+  const mobileDash = document.getElementById('mobile-dash-link');
+  const mobileTrade = document.getElementById('mobile-trade-link');
+  const mobileFin = document.getElementById('mobile-fin-link');
+  const mobileAdmin = document.getElementById('mobile-admin-link');
+
+  if (!isSA && perms.Dashboard === false) {
+    if (navDash) navDash.classList.add('hidden');
+    if (mobileDash) mobileDash.classList.add('hidden');
+  }
+  if (!isSA && perms.Trading === false) {
+    if (navTrade) navTrade.classList.add('hidden');
+    if (mobileTrade) mobileTrade.classList.add('hidden');
+  }
+  if (!isSA && perms.Finance === false) {
+    if (navFin) navFin.classList.add('hidden');
+    if (mobileFin) mobileFin.classList.add('hidden');
+  }
+  if (!isSA) {
+    if (navAdmin) navAdmin.classList.add('hidden');
+    if (mobileAdmin) mobileAdmin.classList.add('hidden');
+  } else {
+    if (navAdmin) navAdmin.classList.remove('hidden');
+    if (mobileAdmin) mobileAdmin.classList.remove('hidden');
+  }
+
+  // 2. Proteksi Halaman Saat Ini (Block & Hide Tampilan jika tidak punya izin)
+  if (!isSA) {
+    if (pageName === 'Dashboard' && perms.Dashboard === false) {
+      blockAccessAndRedirect('Akses ditolak: Anda tidak memiliki izin mengakses Dashboard.');
+      return;
+    } else if (pageName === 'Trading' && perms.Trading === false) {
+      blockAccessAndRedirect('Akses ditolak: Anda tidak memiliki izin mengakses modul Trading.');
+      return;
+    } else if (pageName === 'Finance' && perms.Finance === false) {
+      blockAccessAndRedirect('Akses ditolak: Anda tidak memiliki izin mengakses modul Keuangan.');
+      return;
+    }
+  }
+
+  // 3. Sembunyikan Tombol CRUD Tambah Data jika tidak ada izin CRUD
+  if (!isSA) {
+    if (pageName === 'Trading' && perms.CRUDTrading === false) {
+      const btnAdd = document.getElementById('btn-add-trading');
+      if (btnAdd) btnAdd.classList.add('hidden');
+    }
+    if (pageName === 'Finance' && perms.CRUDFinance === false) {
+      const btnAdd = document.getElementById('btn-add-finance');
+      if (btnAdd) btnAdd.classList.add('hidden');
+    }
+  }
+}
+
+function blockAccessAndRedirect(msg) {
+  const main = document.querySelector('main');
+  if (main) {
+    main.innerHTML = `
+      <div class="max-w-md mx-auto my-12 p-8 bg-white dark:bg-zinc-900 border border-rose-500/30 rounded-3xl text-center space-y-4 shadow-2xl">
+        <div class="w-16 h-16 bg-rose-500/10 text-rose-500 rounded-2xl mx-auto flex items-center justify-center font-bold text-3xl">
+          <iconify-icon icon="lucide:shield-alert"></iconify-icon>
+        </div>
+        <h3 class="text-lg font-bold text-zinc-900 dark:text-zinc-100">Akses Ditolak</h3>
+        <p class="text-xs text-zinc-400">${msg}</p>
+        <button onclick="redirectFirstAvailablePage()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow transition">
+          Ke Halaman Yang Diizinkan
+        </button>
+      </div>
+    `;
+  }
+  showToast(msg, 'error');
+}
+
+function redirectFirstAvailablePage() {
+  const session = getSession();
+  if (!session) {
+    window.location.href = './login.html';
+    return;
+  }
+  const isSA = session.role === 'Super Admin' || session.role === 'admin';
+  const p = session.permissions || {};
+
+  if (isSA || p.Dashboard !== false) {
+    window.location.href = './dashboard.html';
+  } else if (p.Trading !== false) {
+    window.location.href = './trading.html';
+  } else if (p.Finance !== false) {
+    window.location.href = './finance.html';
+  } else {
+    showToast('Akun Anda tidak memiliki izin ke halaman manapun. Hubungi Super Admin.', 'error');
+    setTimeout(() => {
+      logout();
+    }, 2000);
   }
 }
 

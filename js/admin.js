@@ -10,6 +10,7 @@ let adminState = {
 document.addEventListener('DOMContentLoaded', async () => {
   checkAuthGuard();
   checkSuperAdminGuard();
+  applyPermissionGuards('Admin');
   initUserInfo();
   await loadUsersAndPermissions();
 });
@@ -26,7 +27,7 @@ function initUserInfo() {
 
 function checkSuperAdminGuard() {
   const session = getSession();
-  const isSA = session && (session.role === 'Super Admin' || session.role === 'admin' || session.username.toLowerCase() === 'admin');
+  const isSA = session && (session.role === 'Super Admin' || session.role === 'admin' || session.username.toLowerCase() === 'wansmin' || session.username.toLowerCase() === 'admin');
   if (!isSA) {
     showToast('Akses ditolak: Halaman ini khusus untuk Super Admin.', 'error');
     setTimeout(() => {
@@ -72,8 +73,8 @@ function updateAdminStatsSummary() {
 
 function filterUsers() {
   const search = (document.getElementById('search-users')?.value || '').toLowerCase();
-  adminState.filteredUsers = adminState.users.filter(u => 
-    (u.Username || '').toLowerCase().includes(search) || 
+  adminState.filteredUsers = adminState.users.filter(u =>
+    (u.Username || '').toLowerCase().includes(search) ||
     (u.UserID || '').toLowerCase().includes(search)
   );
   renderAdminTable();
@@ -82,6 +83,10 @@ function filterUsers() {
 function renderAdminTable() {
   const tbody = document.getElementById('admin-table-body');
   if (!tbody) return;
+
+  const session = getSession();
+  const currentUsername = session ? (session.username || '').toLowerCase() : '';
+  const isCurrentWansmin = currentUsername === 'wansmin';
 
   const users = adminState.filteredUsers;
 
@@ -100,26 +105,30 @@ function renderAdminTable() {
     const p = u.Permissions || {};
     const isSA = u.Role === 'Super Admin';
     const isActive = u.Status !== 'Disabled' && u.Status !== 'Inactive';
+    const isWansminUser = (u.Username || '').toLowerCase() === 'wansmin';
 
     return `
       <tr class="border-b border-zinc-200 dark:border-zinc-800/60 text-xs text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/40 transition">
         <td class="px-4 py-3 font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-          <div class="w-8 h-8 rounded-xl bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center font-bold text-xs uppercase">
+          <div class="w-8 h-8 rounded-xl ${isWansminUser ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40' : 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30'} flex items-center justify-center font-bold text-xs uppercase">
             ${u.Username.charAt(0)}
           </div>
           <div>
-            <p class="font-bold text-zinc-900 dark:text-zinc-100">${u.Username}</p>
+            <p class="font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1">
+              <span>${u.Username}</span>
+              ${isWansminUser ? '<span class="text-[10px] bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded-full font-extrabold border border-amber-500/30">Utama</span>' : ''}
+            </p>
             <p class="text-[10px] font-mono text-zinc-400">${u.UserID}</p>
           </div>
         </td>
         <td class="px-4 py-3">
-          <select id="role-${u.UserID}" class="px-2.5 py-1.5 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs font-bold ${isSA ? 'text-indigo-400' : 'text-zinc-300'}">
+          <select id="role-${u.UserID}" ${isWansminUser ? 'disabled' : ''} class="px-2.5 py-1.5 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs font-bold ${isSA ? 'text-indigo-400' : 'text-zinc-300'} ${isWansminUser ? 'opacity-60 cursor-not-allowed' : ''}">
             <option value="User" ${!isSA ? 'selected' : ''}>Member</option>
             <option value="Super Admin" ${isSA ? 'selected' : ''}>Super Admin</option>
           </select>
         </td>
         <td class="px-4 py-3">
-          <select id="status-${u.UserID}" class="px-2.5 py-1.5 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs font-bold ${isActive ? 'text-emerald-500' : 'text-rose-500'}">
+          <select id="status-${u.UserID}" ${isWansminUser ? 'disabled' : ''} class="px-2.5 py-1.5 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs font-bold ${isActive ? 'text-emerald-500' : 'text-rose-500'} ${isWansminUser ? 'opacity-60 cursor-not-allowed' : ''}">
             <option value="Active" ${isActive ? 'selected' : ''}>Active</option>
             <option value="Disabled" ${!isActive ? 'selected' : ''}>Disabled</option>
           </select>
@@ -148,11 +157,34 @@ function renderAdminTable() {
               <iconify-icon icon="lucide:save"></iconify-icon>
               <span>Simpan</span>
             </button>
+            ${isCurrentWansmin && !isWansminUser ? `
+              <button onclick="deleteUserPermanently('${u.UserID}', '${u.Username}')" class="px-2.5 py-1.5 bg-rose-500/10 hover:bg-rose-600 text-rose-500 hover:text-white border border-rose-500/30 rounded-xl font-bold text-[11px] transition flex items-center gap-1 shadow-sm" title="Hapus Pengguna (Khusus Wansmin)">
+                <iconify-icon icon="lucide:trash-2" class="text-sm"></iconify-icon>
+                <span>Hapus</span>
+              </button>
+            ` : ''}
           </div>
         </td>
       </tr>
     `;
   }).join('');
+}
+
+async function deleteUserPermanently(targetUserID, username) {
+  if (!confirm(`Apakah Anda yakin ingin menghapus pengguna (${username}) secara permanen? Data permission & pengguna akan dihapus!`)) {
+    return;
+  }
+
+  showLoading(true);
+  const res = await apiCall('deleteUser', { targetUserID });
+  showLoading(false);
+
+  if (res && res.success) {
+    showToast(res.message || `Pengguna ${username} berhasil dihapus!`, 'success');
+    await loadUsersAndPermissions();
+  } else {
+    showToast(res ? (res.message || 'Gagal menghapus pengguna.') : 'Gagal menghapus pengguna.', 'error');
+  }
 }
 
 async function saveUserPermissions(targetUserID) {

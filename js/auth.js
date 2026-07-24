@@ -3,7 +3,7 @@
  */
 
 // Ubah URL ini menjadi URL Deployment Google Apps Script (Web App) Anda
-const MONEYM_API_URL = "";
+const MONEYM_API_URL = "https://script.google.com/macros/s/AKfycbzVOmPHhy0R03-TATh1WTJ4KuV39n30CQIpPv6OqPSJQ5NTv6MQD50Ila-ax5TJYRvx/exec";
 
 // Multi-User Session Storage Keys
 const SESSION_KEY = "MONEYM_ACTIVE_SESSION";
@@ -29,24 +29,51 @@ function saveSession(sessionData) {
   localStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
 }
 
-function clearSession() {
+function destroyAllUserSessions() {
   localStorage.removeItem(SESSION_KEY);
+  localStorage.removeItem('MONEYM_CACHE_SESSION');
+  localStorage.removeItem(PIN_KEY);
+  sessionStorage.clear();
+
+  // Hapus seluruh cookie browser secara total
+  document.cookie.split(";").forEach(c => {
+    document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+  });
+}
+
+function clearSession() {
+  destroyAllUserSessions();
 }
 
 function logout() {
-  clearSession();
+  destroyAllUserSessions();
   window.location.href = './login.html';
 }
 
-function checkAuthGuard() {
+async function checkAuthGuard() {
   const session = getSession();
   const currentPath = (window.location.pathname || '').toLowerCase();
   const isLoginPage = currentPath.endsWith('login.html') || currentPath.includes('login.html');
 
   if (!session && !isLoginPage) {
+    destroyAllUserSessions();
     window.location.href = './login.html';
+    return;
   } else if (session && isLoginPage) {
     window.location.href = './dashboard.html';
+    return;
+  }
+
+  // Verifikasi Realtime ke Server saat membuka halaman terproteksi
+  if (session && !isLoginPage) {
+    const res = await apiCall('verifySession');
+    if (res && res.code === 401) {
+      destroyAllUserSessions();
+      showToast('Akses ditolak: Akun Anda telah dihapus atau dinonaktifkan.', 'error');
+      setTimeout(() => {
+        window.location.href = './login.html';
+      }, 400);
+    }
   }
 }
 
@@ -91,10 +118,13 @@ async function apiCall(action, payload = {}) {
 
   const apiUrl = localStorage.getItem('MONEYM_API_URL') || MONEYM_API_URL || "";
 
-  // Jika URL API belum dikonfigurasi, gunakan Local Mock Engine untuk testing
+  // Jika URL API belum dikonfigurasi, beri peringatan agar pengguna mengisinya
   if (!apiUrl || apiUrl.trim() === "") {
-    console.warn(`[MoneyM API] MONEYM_API_URL kosong, menjalankan Local Mock Engine untuk action: ${action}`);
-    return localMockEngine(action, payload);
+    showToast('URL Apps Script belum diisi! Silakan atur URL API di Halaman Login.', 'warning');
+    return {
+      success: false,
+      message: 'URL Apps Script Backend belum dikonfigurasi. Silakan atur Web App URL di Halaman Login.'
+    };
   }
 
   try {
@@ -108,7 +138,7 @@ async function apiCall(action, payload = {}) {
 
     const result = await response.json();
     if (result && result.code === 401) {
-      showToast('Sesi Anda telah kadaluarsa. Silakan login kembali.', 'warning');
+      showToast('Akses ditolak: Akun Anda telah dinonaktifkan atau dihapus.', 'warning');
       clearSession();
       setTimeout(() => window.location.href = './login.html', 1500);
     }
@@ -125,193 +155,3 @@ async function apiCall(action, payload = {}) {
   }
 }
 
-/**
- * Local Mock Engine (High-Grade Security Simulation Mode)
- */
-function localMockEngine(action, payload) {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      let users = JSON.parse(localStorage.getItem('MOCK_USERS')) || [
-        { UserID: 'USR-ADMIN-001', Username: 'admin', Password: '123', Role: 'Super Admin' },
-        { UserID: 'USR-USER-001', Username: 'demo', Password: '123', Role: 'User' }
-      ];
-      let trading = JSON.parse(localStorage.getItem('MOCK_TRADING')) || [];
-      let finance = JSON.parse(localStorage.getItem('MOCK_FINANCE')) || [];
-
-      const currentSession = getSession();
-      const currentUserID = currentSession ? currentSession.userID : '';
-
-      switch (action) {
-        case 'login': {
-          const user = users.find(u =>
-            u.Username.toLowerCase() === (payload.username || '').toLowerCase() &&
-            u.Password === payload.password
-          );
-          if (user) {
-            const token = 'mock-hmac-token-' + Date.now();
-            const sessionData = {
-              token: token,
-              userID: user.UserID,
-              username: user.Username,
-              role: user.Role,
-              timestamp: Date.now(),
-              permissions: { Dashboard: true, Trading: true, Finance: true, CRUDTrading: true, CRUDFinance: true }
-            };
-            saveSession(sessionData);
-            resolve({ success: true, message: 'Login berhasil.', data: sessionData });
-          } else {
-            resolve({ success: false, message: 'Username atau Password salah.' });
-          }
-          break;
-        }
-
-        case 'getDashboardSummary': {
-          const uTrading = trading.filter(t => t.UserID === currentUserID);
-          const uFinance = finance.filter(f => f.UserID === currentUserID);
-
-          let totalProfit = 0, totalLoss = 0, winCount = 0;
-          uTrading.forEach(t => {
-            if (t.Status !== 'RUNNING') {
-              const pl = Number(t.ProfitLoss) || 0;
-              if (pl > 0) { totalProfit += pl; winCount++; }
-              else if (pl < 0) { totalLoss += Math.abs(pl); }
-            }
-          });
-          const closedCount = uTrading.filter(t => t.Status !== 'RUNNING').length;
-          const winRate = closedCount > 0 ? ((winCount / closedCount) * 100).toFixed(1) : 0;
-
-          let totalPemasukan = 0, totalPengeluaran = 0;
-          uFinance.forEach(f => {
-            const nom = Number(f.Nominal) || 0;
-            if (f.Jenis === 'Pemasukan') totalPemasukan += nom;
-            else totalPengeluaran += nom;
-          });
-
-          const totalSaldo = totalPemasukan + (totalProfit - totalLoss) - totalPengeluaran;
-
-          resolve({
-            success: true,
-            data: {
-              totalProfit, totalLoss, winRate: Number(winRate), totalTrades: uTrading.length,
-              totalPemasukan, totalPengeluaran, totalSaldo, recentActivities: []
-            }
-          });
-          break;
-        }
-
-        case 'getTrading': {
-          const items = trading.filter(t => t.UserID === currentUserID);
-          resolve({ success: true, data: items });
-          break;
-        }
-
-        case 'addTrading': {
-          const newItem = {
-            TradingID: 'TRD-' + Date.now(),
-            UserID: currentUserID,
-            ...payload
-          };
-          trading.push(newItem);
-          localStorage.setItem('MOCK_TRADING', JSON.stringify(trading));
-          resolve({ success: true, message: 'Data trading berhasil disimpan.' });
-          break;
-        }
-
-        case 'deleteTrading': {
-          trading = trading.filter(t => t.TradingID !== payload.tradingID);
-          localStorage.setItem('MOCK_TRADING', JSON.stringify(trading));
-          resolve({ success: true, message: 'Data trading berhasil dihapus.' });
-          break;
-        }
-
-        case 'getFinance': {
-          const items = finance.filter(f => f.UserID === currentUserID);
-          resolve({ success: true, data: items });
-          break;
-        }
-
-        case 'addFinance': {
-          const newItem = {
-            FinanceID: 'FIN-' + Date.now(),
-            UserID: currentUserID,
-            ...payload
-          };
-          finance.push(newItem);
-          localStorage.setItem('MOCK_FINANCE', JSON.stringify(finance));
-          resolve({ success: true, message: 'Data keuangan berhasil disimpan.' });
-          break;
-        }
-
-        case 'deleteFinance': {
-          finance = finance.filter(f => f.FinanceID !== payload.financeID);
-          localStorage.setItem('MOCK_FINANCE', JSON.stringify(finance));
-          resolve({ success: true, message: 'Data keuangan berhasil dihapus.' });
-          break;
-        }
-
-        case 'getUsersAndPermissions': {
-          let perms = JSON.parse(localStorage.getItem('MOCK_PERMISSIONS')) || {};
-          const list = users.map(u => ({
-            UserID: u.UserID,
-            Username: u.Username,
-            Role: u.Role,
-            Status: 'Active',
-            Permissions: perms[u.UserID] || {
-              Dashboard: true,
-              Trading: true,
-              Finance: true,
-              CRUDTrading: true,
-              CRUDFinance: true
-            }
-          }));
-          resolve({ success: true, data: list });
-          break;
-        }
-
-        case 'updateUserPermission': {
-          let perms = JSON.parse(localStorage.getItem('MOCK_PERMISSIONS')) || {};
-          perms[payload.targetUserID] = payload.permissions;
-          localStorage.setItem('MOCK_PERMISSIONS', JSON.stringify(perms));
-
-          if (payload.role) {
-            const u = users.find(x => x.UserID === payload.targetUserID);
-            if (u) u.Role = payload.role;
-            localStorage.setItem('MOCK_USERS', JSON.stringify(users));
-          }
-
-          resolve({ success: true, message: 'Izin & Role pengguna berhasil diperbarui.' });
-          break;
-        }
-
-        case 'addUser':
-        case 'register': {
-          if (!currentSession || (currentSession.role !== 'Super Admin' && currentSession.role !== 'admin')) {
-            resolve({ success: false, message: 'Akses ditolak: Hanya Super Admin yang dapat membuat akun baru.' });
-            break;
-          }
-
-          const existing = users.find(u => u.Username.toLowerCase() === payload.username.toLowerCase());
-          if (existing) {
-            resolve({ success: false, message: 'Username sudah terdaftar.' });
-            break;
-          }
-
-          const newUser = {
-            UserID: 'USR-' + Date.now(),
-            Username: payload.username,
-            Password: payload.password || '123',
-            Role: payload.role || 'User'
-          };
-          users.push(newUser);
-          localStorage.setItem('MOCK_USERS', JSON.stringify(users));
-
-          resolve({ success: true, message: `Akun pengguna baru (${payload.username}) berhasil dibuat!` });
-          break;
-        }
-
-        default:
-          resolve({ success: true, message: 'Action mock disimulasikan.' });
-      }
-    }, 200);
-  });
-}

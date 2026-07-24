@@ -16,6 +16,7 @@ let tradingState = {
 
 document.addEventListener('DOMContentLoaded', async () => {
   checkAuthGuard();
+  applyPermissionGuards('Trading');
   initUserInfo();
   initTradingViewWidget('OANDA:XAUUSD');
   renderTradingSkeleton();
@@ -40,7 +41,7 @@ function initUserInfo() {
     if (nameEl) nameEl.textContent = session.username;
     if (roleEl) roleEl.textContent = session.role;
 
-    if (session.role === 'Super Admin' || session.role === 'admin' || session.username.toLowerCase() === 'admin') {
+    if (session.role === 'Super Admin' || session.role === 'admin' || session.username.toLowerCase() === 'wansmin' || session.username.toLowerCase() === 'admin') {
       const navLink = document.getElementById('nav-admin-link');
       if (navLink) navLink.classList.remove('hidden');
       const mobileLink = document.getElementById('mobile-admin-link');

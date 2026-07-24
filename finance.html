@@ -31,15 +31,15 @@
       </div>
 
       <nav class="hidden md:flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800/80 p-1 rounded-xl border border-zinc-200 dark:border-zinc-700/60">
-        <a href="dashboard.html" class="px-4 py-2 text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition flex items-center gap-1.5">
+        <a id="nav-dash-link" href="dashboard.html" class="px-4 py-2 text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition flex items-center gap-1.5">
           <iconify-icon icon="lucide:layout-dashboard"></iconify-icon>
           <span>Dashboard</span>
         </a>
-        <a href="trading.html" class="px-4 py-2 text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition flex items-center gap-1.5">
+        <a id="nav-trade-link" href="trading.html" class="px-4 py-2 text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition flex items-center gap-1.5">
           <iconify-icon icon="lucide:candlestick-chart"></iconify-icon>
           <span>Progress Trading</span>
         </a>
-        <a href="finance.html" class="px-4 py-2 text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-white dark:bg-zinc-900 rounded-lg shadow-sm flex items-center gap-1.5">
+        <a id="nav-fin-link" href="finance.html" class="px-4 py-2 text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-white dark:bg-zinc-900 rounded-lg shadow-sm flex items-center gap-1.5">
           <iconify-icon icon="lucide:wallet-cards"></iconify-icon>
           <span>Kelola Keuangan</span>
         </a>
@@ -82,7 +82,7 @@
         </h2>
         <p class="text-xs text-zinc-400">Pemasukan, pengeluaran harian, gaji, freelance, dan investasi.</p>
       </div>
-      <button onclick="openFinanceModal()"
+      <button id="btn-add-finance" onclick="openFinanceModal()"
         class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-2xl shadow-lg shadow-emerald-600/30 transition flex items-center justify-center gap-2">
         <iconify-icon icon="lucide:plus" class="text-base"></iconify-icon>
         <span>Transaksi Keuangan</span>
@@ -241,13 +241,13 @@
   <!-- Mobile Bottom Floating Bar -->
   <div class="md:hidden fixed bottom-4 left-4 right-4 z-40">
     <div class="bg-zinc-900/90 backdrop-blur-md text-white p-2 rounded-2xl shadow-2xl border border-zinc-800 flex items-center justify-around">
-      <a href="dashboard.html" class="flex flex-col items-center gap-1 px-4 py-2 text-zinc-400 font-medium text-[11px]">
+      <a id="mobile-dash-link" href="dashboard.html" class="flex flex-col items-center gap-1 px-4 py-2 text-zinc-400 font-medium text-[11px]">
         <iconify-icon icon="lucide:layout-dashboard" class="text-base"></iconify-icon> Dashboard
       </a>
-      <a href="trading.html" class="flex flex-col items-center gap-1 px-4 py-2 text-zinc-400 font-medium text-[11px]">
+      <a id="mobile-trade-link" href="trading.html" class="flex flex-col items-center gap-1 px-4 py-2 text-zinc-400 font-medium text-[11px]">
         <iconify-icon icon="lucide:candlestick-chart" class="text-base"></iconify-icon> Trading
       </a>
-      <a href="finance.html" class="flex flex-col items-center gap-1 px-3 py-1.5 text-emerald-400 font-bold text-[11px]">
+      <a id="mobile-fin-link" href="finance.html" class="flex flex-col items-center gap-1 px-3 py-1.5 text-emerald-400 font-bold text-[11px]">
         <iconify-icon icon="lucide:wallet-cards" class="text-base"></iconify-icon> Keuangan
       </a>
       <a id="mobile-admin-link" href="admin.html" class="hidden flex flex-col items-center gap-1 px-3 py-1.5 text-amber-400 font-medium text-[11px]">

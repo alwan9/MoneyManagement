@@ -78,23 +78,6 @@
       </div>
     </div>
 
-    <!-- Apps Script Endpoint Config Collapsible -->
-    <div class="mt-6 text-center">
-      <button type="button" onclick="toggleConfig()" class="text-xs text-indigo-400 hover:underline flex items-center justify-center gap-1 mx-auto">
-        <iconify-icon icon="lucide:settings"></iconify-icon>
-        <span>Pengaturan URL Apps Script Backend</span>
-      </button>
-      <div id="config-panel" class="hidden mt-3 p-3 bg-zinc-950/90 rounded-xl border border-zinc-800 text-left">
-        <label class="block text-[11px] text-zinc-400 mb-1">Web App URL (Optional):</label>
-        <input type="text" id="api-url-input" placeholder="https://script.google.com/macros/s/.../exec"
-          class="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-xs text-white placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-        <button type="button" onclick="saveApiUrl()" class="mt-2 w-full py-1.5 bg-indigo-600 text-xs font-semibold text-white rounded-lg hover:bg-indigo-500 flex items-center justify-center gap-1">
-          <iconify-icon icon="lucide:save"></iconify-icon>
-          <span>Simpan URL API</span>
-        </button>
-      </div>
-    </div>
-
   </div>
 
   <script src="js/helper.js"></script>
@@ -102,10 +85,6 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       checkAuthGuard();
-      const currentUrl = localStorage.getItem('MONEYM_API_URL') || '';
-      if (currentUrl) {
-        document.getElementById('api-url-input').value = currentUrl;
-      }
 
       const pin = typeof getPin === 'function' ? getPin() : '';
       const cachedSession = localStorage.getItem('MONEYM_CACHE_SESSION');
@@ -141,18 +120,6 @@
       }
     }
 
-    function toggleConfig() {
-      const panel = document.getElementById('config-panel');
-      panel.classList.toggle('hidden');
-    }
-
-    function saveApiUrl() {
-      const url = document.getElementById('api-url-input').value;
-      localStorage.setItem('MONEYM_API_URL', url);
-      showToast('URL Backend Google Apps Script disimpan!', 'success');
-      toggleConfig();
-    }
-
     document.getElementById('login-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const username = document.getElementById('username').value;
@@ -166,17 +133,6 @@
         if (res.data) {
           saveSession(res.data);
           localStorage.setItem('MONEYM_CACHE_SESSION', JSON.stringify(res.data));
-          // Tanya jika pengguna ingin menyalakan PIN 4-Digit bila belum ada
-          if (!getPin()) {
-            const setPinPrompt = confirm('Apakah Anda ingin mengaktifkan PIN Cepat 4-Digit untuk login selanjutnya di HP ini?');
-            if (setPinPrompt) {
-              const newPin = prompt('Masukkan 4 Angka PIN Keamanan Anda:');
-              if (newPin && newPin.length === 4 && !isNaN(newPin)) {
-                savePin(newPin);
-                showToast('PIN 4-Digit berhasil diaktifkan! 🔒', 'success');
-              }
-            }
-          }
         }
         showToast(res.message || 'Login berhasil!', 'success');
         setTimeout(() => {

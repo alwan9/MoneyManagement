@@ -169,3 +169,13 @@ html:not(.dark) ::-webkit-scrollbar-thumb:hover {
   background: #a1a1aa;
   /* zinc-400 */
 }
+
+/* 30-Second Countdown Timer Animation for PWA Banner */
+@keyframes timerBar30s {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
+.animate-timer-30s {
+  animation: timerBar30s 30s linear forwards;
+}

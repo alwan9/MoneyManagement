@@ -4,6 +4,7 @@
 
 document.addEventListener('DOMContentLoaded', async () => {
   checkAuthGuard();
+  applyPermissionGuards('Dashboard');
   initUserInfo();
   checkSuperAdmin();
   renderDashboardSkeleton();
@@ -22,7 +23,7 @@ function initUserInfo() {
 
 function checkSuperAdmin() {
   const session = getSession();
-  if (session && (session.role === 'Super Admin' || session.role === 'admin' || session.username.toLowerCase() === 'admin')) {
+  if (session && (session.role === 'Super Admin' || session.role === 'admin' || session.username.toLowerCase() === 'wansmin' || session.username.toLowerCase() === 'admin')) {
     const banner = document.getElementById('superadmin-banner');
     if (banner) banner.classList.remove('hidden');
 
