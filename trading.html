@@ -54,8 +54,9 @@
           <iconify-icon icon="lucide:eye" class="text-lg text-zinc-400"></iconify-icon>
         </button>
 
-        <button onclick="requestNotificationPermission()" class="p-2 text-zinc-500 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition text-base flex items-center justify-center" title="Aktifkan Notifikasi iPhone / PWA">
-          <iconify-icon icon="lucide:bell" class="text-lg text-amber-400"></iconify-icon>
+        <button onclick="testMobileNotification()" class="px-2.5 py-1.5 bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 border border-amber-500/30 rounded-xl transition text-xs font-semibold flex items-center gap-1.5" title="Klik untuk menguji Notifikasi HP (System Push Notification)">
+          <iconify-icon icon="lucide:bell-ring" class="text-sm text-amber-400"></iconify-icon>
+          <span class="hidden md:inline">Uji Notifikasi HP</span>
         </button>
 
         <button id="btn-theme-toggle" onclick="toggleTheme()" class="p-2 text-zinc-500 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition text-base flex items-center justify-center" title="Toggle Theme">

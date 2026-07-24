@@ -201,17 +201,37 @@ async function requestNotificationPermission() {
     return false;
   }
   if (Notification.permission === 'granted') {
+    showToast('Notifikasi HP sudah diizinkan & aktif! 🔔', 'success');
     return true;
   }
   if (Notification.permission !== 'denied') {
     const perm = await Notification.requestPermission();
     if (perm === 'granted') {
-      showToast('Notifikasi pengingat trade aktif di perangkat Anda! 🔔', 'success');
+      showToast('Notifikasi HP berhasil diaktifkan! 🔔', 'success');
+      sendLocalNotification('🔔 Notifikasi HP Aktif!', {
+        body: 'Selamat! Notifikasi 10 pips mendekati Entry & TP/SL akan terkirim langsung ke HP Anda.',
+        tag: 'afintrack-permission-confirmed'
+      });
       return true;
     }
   }
-  showToast('Izin notifikasi tidak diberikan.', 'info');
+  showToast('Izin notifikasi ditolak oleh sistem browser/HP.', 'warning');
   return false;
+}
+
+async function testMobileNotification() {
+  const granted = await requestNotificationPermission();
+  if (granted || Notification.permission === 'granted') {
+    sendLocalNotification('🧪 Tes Notifikasi HP (AFinTrack)', {
+      body: 'Notifikasi HP Anda berfungsi sempurna! Peringatan 10 pips mendekati Entry akan muncul langsung di HP Anda.',
+      tag: 'afintrack-mobile-test-' + Date.now(),
+      vibrate: [300, 100, 300, 100, 300],
+      requireInteraction: true
+    });
+    showToast('Tes Notifikasi terkirim ke HP Anda! Cek status bar / lockscreen HP.', 'info');
+  } else {
+    showToast('Mohon izinkan Notifikasi di HP Anda terlebih dahulu.', 'warning');
+  }
 }
 
 function sendLocalNotification(title, options = {}) {
@@ -222,15 +242,18 @@ function sendLocalNotification(title, options = {}) {
   const defaultOptions = {
     icon: 'https://api.iconify.design/lucide:candlestick-chart.svg?color=%234f46e5',
     badge: 'https://api.iconify.design/lucide:wallet.svg?color=%234f46e5',
-    vibrate: [200, 100, 200],
-    tag: 'afintrack-running-trade-reminder',
+    vibrate: [300, 100, 300, 100, 300],
+    tag: 'afintrack-trade-notification',
     renotify: true,
+    requireInteraction: true,
     ...options
   };
 
   if (navigator.serviceWorker && navigator.serviceWorker.ready) {
     navigator.serviceWorker.ready.then(reg => {
       reg.showNotification(title, defaultOptions);
+    }).catch(() => {
+      try { new Notification(title, defaultOptions); } catch (e) {}
     });
   } else {
     try {

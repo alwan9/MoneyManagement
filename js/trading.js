@@ -11,7 +11,8 @@ let tradingState = {
   livePriceInterval: null,
   reminder5MinInterval: null,
   currentLivePrice: 0,
-  plType: 'PROFIT' // 'PROFIT' or 'LOSS'
+  plType: 'PROFIT', // 'PROFIT' or 'LOSS'
+  notifiedProximity: {}
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -85,7 +86,7 @@ function checkAndNotifyRunningTrades(items) {
   if (running.length > 0) {
     const pairs = running.map(r => `${r.Pair} (${r.BuySell})`).join(', ');
     const title = `⏳ ${running.length} Posisi Trading Belum Selesai!`;
-    const body = `Anda memiliki ${running.length} posisi yang masih RUNNING: ${pairs}. Notifikasi pengingat otomatis aktif setiap 5 menit!`;
+    const body = `Anda memiliki ${running.length} posisi yang masih RUNNING: ${pairs}. Pemantauan 10 pips ke Entry & HP Notification aktif!`;
 
     sendLocalNotification(title, {
       body: body,
@@ -94,16 +95,104 @@ function checkAndNotifyRunningTrades(items) {
   }
 }
 
-// Smart 5-Minute Timer & SL/TP Hit Detection Engine
+// Helper Penentu Ukuran Pip per Instrumen
+function getPipSize(pair = 'XAUUSD') {
+  const p = (pair || 'XAUUSD').toUpperCase().replace('/', '').trim();
+  if (p.includes('XAU') || p.includes('GOLD')) {
+    return 0.10; // Gold/XAUUSD: $0.10 = 1 pip (10 pips = $1.00)
+  } else if (p.includes('JPY')) {
+    return 0.01; // JPY Pairs: 0.01 = 1 pip
+  } else if (p.includes('BTC') || p.includes('ETH')) {
+    return 1.0;  // Crypto: $1.00 = 1 pip
+  }
+  return 0.0001; // Standard Forex: 0.0001 = 1 pip
+}
+
+// Detektor Notifikasi Proximity 10 Pips (Entry, TP & SL) langsung ke HP
+function check10PipsProximityAndNotify(trade, currentPrice) {
+  if (!trade || !currentPrice || currentPrice <= 0) return;
+
+  const pair = (trade.Pair || 'XAUUSD').toUpperCase();
+  const buySell = trade.BuySell || 'BUY';
+  const entry = Number(trade.Entry) || 0;
+  const sl = Number(trade.SL) || 0;
+  const tp = Number(trade.TP) || 0;
+  const pipSize = getPipSize(pair);
+  const now = Date.now();
+  const COOLDOWN_MS = 15 * 60 * 1000; // Cooldown 15 menit per alert agar HP tidak bergetar berlebihan
+
+  if (!tradingState.notifiedProximity) {
+    tradingState.notifiedProximity = {};
+  }
+
+  // 1. Deteksi 10 Pips Mendekati ENTRY
+  if (entry > 0) {
+    const distEntryPips = Math.abs(currentPrice - entry) / pipSize;
+    if (distEntryPips <= 10.0) {
+      const key = `entry_10pip_${trade.TradingID}`;
+      const lastSent = tradingState.notifiedProximity[key] || 0;
+
+      if (now - lastSent > COOLDOWN_MS) {
+        tradingState.notifiedProximity[key] = now;
+        sendLocalNotification(`🔔 DETEKSI 10 PIPS MENDEKATI ENTRY!`, {
+          body: `${pair} (${buySell}): Entry di $${entry}. Harga pasar saat ini $${currentPrice.toFixed(2)} (selisih ${distEntryPips.toFixed(1)} pips). Perhatikan HP Anda!`,
+          tag: `10pip-entry-${trade.TradingID}`,
+          requireInteraction: true
+        });
+      }
+    }
+  }
+
+  // 2. Deteksi 10 Pips Mendekati TAKE PROFIT (TP)
+  if (tp > 0) {
+    const distTPPips = Math.abs(currentPrice - tp) / pipSize;
+    if (distTPPips <= 10.0) {
+      const key = `tp_10pip_${trade.TradingID}`;
+      const lastSent = tradingState.notifiedProximity[key] || 0;
+
+      if (now - lastSent > COOLDOWN_MS) {
+        tradingState.notifiedProximity[key] = now;
+        sendLocalNotification(`🎯 MENDEKATI TAKE PROFIT (10 PIPS)!`, {
+          body: `${pair} (${buySell}): TP di $${tp}. Harga pasar saat ini $${currentPrice.toFixed(2)} (selisih ${distTPPips.toFixed(1)} pips dari TP).`,
+          tag: `10pip-tp-${trade.TradingID}`,
+          requireInteraction: true
+        });
+      }
+    }
+  }
+
+  // 3. Deteksi 10 Pips Mendekati STOP LOSS (SL)
+  if (sl > 0) {
+    const distSLPips = Math.abs(currentPrice - sl) / pipSize;
+    if (distSLPips <= 10.0) {
+      const key = `sl_10pip_${trade.TradingID}`;
+      const lastSent = tradingState.notifiedProximity[key] || 0;
+
+      if (now - lastSent > COOLDOWN_MS) {
+        tradingState.notifiedProximity[key] = now;
+        sendLocalNotification(`⚠️ MENDEKATI STOP LOSS (10 PIPS)!`, {
+          body: `${pair} (${buySell}): SL di $${sl}. Harga pasar saat ini $${currentPrice.toFixed(2)} (selisih ${distSLPips.toFixed(1)} pips dari SL). Cek posisi Anda!`,
+          tag: `10pip-sl-${trade.TradingID}`,
+          requireInteraction: true
+        });
+      }
+    }
+  }
+}
+
+// Smart Realtime Proximity & Reminder Engine (30-Sec Fast Check & 5-Min Routine)
+let reminderTickCount = 0;
 function start5MinReminderTimer() {
   if (tradingState.reminder5MinInterval) {
     clearInterval(tradingState.reminder5MinInterval);
   }
 
-  // Timer interval setiap 5 menit (300.000 ms)
+  // Interval polling real-time setiap 30 detik (30.000 ms) untuk akurasi notifikasi 10 pips
   tradingState.reminder5MinInterval = setInterval(async () => {
     const runningTrades = tradingState.items.filter(i => i.Status === 'RUNNING');
     if (runningTrades.length === 0) return;
+
+    reminderTickCount++;
 
     for (let trade of runningTrades) {
       const entry = Number(trade.Entry) || 0;
@@ -126,14 +215,17 @@ function start5MinReminderTimer() {
           if (data && data.price) currentPrice = parseFloat(data.price);
         }
       } catch (err) {
-        console.warn('[5-Min Timer] Fetch price error:', err);
+        console.warn('[Realtime Timer] Fetch price error:', err);
       }
 
       if (currentPrice <= 0) {
         currentPrice = tradingState.currentLivePrice || entry;
       }
 
-      // Evaluasi Deteksi Sinyal HIT TP atau HIT SL
+      // 1. Evaluasi Deteksi 10 Pips Proximity ke Entry / TP / SL
+      check10PipsProximityAndNotify(trade, currentPrice);
+
+      // 2. Evaluasi Deteksi Sinyal HIT TP atau HIT SL
       let hitTP = false;
       let hitSL = false;
 
@@ -148,22 +240,24 @@ function start5MinReminderTimer() {
       if (hitTP) {
         sendLocalNotification(`🎯 SINYAL HIT TP: ${trade.Pair} (${buySell})`, {
           body: `Harga live ($${currentPrice.toFixed(2)}) telah mencapai Take Profit ($${tp})! Klik di sini untuk update hasil trade (PROFIT).`,
-          tag: `sltp-hit-${trade.TradingID}`
+          tag: `sltp-hit-${trade.TradingID}`,
+          requireInteraction: true
         });
       } else if (hitSL) {
         sendLocalNotification(`⚠️ SINYAL HIT SL: ${trade.Pair} (${buySell})`, {
           body: `Harga live ($${currentPrice.toFixed(2)}) telah menyentuh Stop Loss ($${sl})! Klik di sini untuk update hasil trade (LOSS).`,
-          tag: `sltp-hit-${trade.TradingID}`
+          tag: `sltp-hit-${trade.TradingID}`,
+          requireInteraction: true
         });
-      } else {
-        // Pengingat Rutin 5 Menit
+      } else if (reminderTickCount % 10 === 0) {
+        // Pengingat Rutin Setiap 5 Menit (10 Ticks x 30 Detik)
         sendLocalNotification(`⏰ Evaluasi Trade (5-Min): ${trade.Pair} (${buySell})`, {
           body: `Posisi masih RUNNING di harga $${currentPrice.toFixed(2)} (Entry: $${entry}, SL: $${sl}, TP: $${tp}). Cek apakah posisi sudah di-close!`,
           tag: `5min-reminder-${trade.TradingID}`
         });
       }
     }
-  }, 300000); // 5 Menit = 300.000 ms
+  }, 30000); // 30 Detik = 30.000 ms untuk respon mendekati 10 pips yang instan
 }
 
 let currentTradingViewTimeframe = '5';
