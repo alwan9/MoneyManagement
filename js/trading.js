@@ -166,10 +166,16 @@ function start5MinReminderTimer() {
   }, 300000); // 5 Menit = 300.000 ms
 }
 
-// TradingView Widget Gratis Generator
-function initTradingViewWidget(symbol = 'OANDA:XAUUSD') {
+let currentTradingViewTimeframe = '5';
+
+// TradingView Widget Generator (Support Timeframe 5m, 30m, Daily & Drawing Toolbar)
+function initTradingViewWidget(symbol = 'OANDA:XAUUSD', interval = null) {
   const container = document.getElementById('tradingview-widget-container');
   if (!container) return;
+
+  if (interval) {
+    currentTradingViewTimeframe = interval;
+  }
 
   const currentTheme = typeof getTheme === 'function' ? getTheme() : 'dark';
 
@@ -182,19 +188,76 @@ function initTradingViewWidget(symbol = 'OANDA:XAUUSD') {
       new TradingView.widget({
         "autosize": true,
         "symbol": symbol,
-        "interval": "1",
+        "interval": currentTradingViewTimeframe,
         "timezone": "Asia/Jakarta",
         "theme": currentTheme === 'dark' ? 'dark' : 'light',
         "style": "1",
         "locale": "id",
         "toolbar_bg": currentTheme === 'dark' ? '#09090b' : '#f4f4f5',
         "enable_publishing": false,
+        "hide_side_toolbar": false,
         "allow_symbol_change": true,
+        "save_image": true,
+        "time_frames": [
+          { "text": "1D", "resolution": "D", "description": "Daily" },
+          { "text": "30m", "resolution": "30", "description": "30 Menit" },
+          { "text": "5m", "resolution": "5", "description": "5 Menit" }
+        ],
         "container_id": "tradingview-widget-container"
       });
     }
   };
   container.appendChild(widgetScript);
+  updateTimeframeButtonUI(currentTradingViewTimeframe);
+}
+
+function changeTradingViewTimeframe(interval) {
+  const pairSelect = document.getElementById('input-pair')?.value || 'XAUUSD';
+  const formattedSymbol = pairSelect.includes(':') ? pairSelect : `OANDA:${pairSelect.replace('/', '')}`;
+  initTradingViewWidget(formattedSymbol, interval);
+}
+
+function updateTimeframeButtonUI(interval) {
+  const btn5m = document.getElementById('btn-tf-5m');
+  const btn30m = document.getElementById('btn-tf-30m');
+  const btn1D = document.getElementById('btn-tf-1D');
+
+  if (btn5m) {
+    btn5m.className = interval === '5'
+      ? 'px-2.5 py-1 bg-indigo-600 text-white rounded-lg font-bold text-xs shadow'
+      : 'px-2.5 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:text-white rounded-lg font-medium text-xs transition';
+  }
+  if (btn30m) {
+    btn30m.className = interval === '30'
+      ? 'px-2.5 py-1 bg-indigo-600 text-white rounded-lg font-bold text-xs shadow'
+      : 'px-2.5 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:text-white rounded-lg font-medium text-xs transition';
+  }
+  if (btn1D) {
+    btn1D.className = interval === 'D'
+      ? 'px-2.5 py-1 bg-indigo-600 text-white rounded-lg font-bold text-xs shadow'
+      : 'px-2.5 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:text-white rounded-lg font-medium text-xs transition';
+  }
+}
+
+// Handler Perbesar & Resize Ukuran Chart TradingView
+function toggleChartHeight(heightPx) {
+  const container = document.getElementById('tradingview-widget-container');
+  if (!container) return;
+  
+  container.style.height = `${heightPx}px`;
+
+  ['480', '650', '850'].forEach(h => {
+    const btn = document.getElementById(`btn-chart-h-${h}`);
+    if (btn) {
+      if (String(h) === String(heightPx)) {
+        btn.className = 'px-2.5 py-1 bg-indigo-600 text-white font-bold rounded-lg text-xs shadow';
+      } else {
+        btn.className = 'px-2.5 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:text-white font-medium rounded-lg text-xs transition';
+      }
+    }
+  });
+
+  showToast(`Ukuran chart diubah ke ${heightPx}px`, 'info');
 }
 
 // Fetch Live Ticker Price (Realtime Update Every 1 Minute)
@@ -316,6 +379,34 @@ function useLivePrice() {
   }
 }
 
+function setExitToTP() {
+  const tpVal = document.getElementById('input-tp')?.value;
+  const exitInput = document.getElementById('input-exit');
+  if (tpVal && exitInput) {
+    exitInput.value = tpVal;
+    document.getElementById('input-status').value = 'CLOSED';
+    toggleStatusMode();
+    setPLOutcome('PROFIT');
+    showToast('Exit Price diisi dengan harga TP (PROFIT).', 'success');
+  } else {
+    showToast('Take Profit (TP) belum terisi.', 'warning');
+  }
+}
+
+function setExitToSL() {
+  const slVal = document.getElementById('input-sl')?.value;
+  const exitInput = document.getElementById('input-exit');
+  if (slVal && exitInput) {
+    exitInput.value = slVal;
+    document.getElementById('input-status').value = 'CLOSED';
+    toggleStatusMode();
+    setPLOutcome('LOSS');
+    showToast('Exit Price diisi dengan harga SL (LOSS).', 'warning');
+  } else {
+    showToast('Stop Loss (SL) belum terisi.', 'warning');
+  }
+}
+
 function startLiveTickerPolling() {
   stopLiveTickerPolling();
   const pair = document.getElementById('input-pair')?.value || 'XAUUSD';
@@ -392,6 +483,53 @@ function renderStatsSummary() {
   }
 }
 
+function getOrCalculateSLTP(item) {
+  let sl = item.SL && Number(item.SL) > 0 ? Number(item.SL) : 0;
+  let tp = item.TP && Number(item.TP) > 0 ? Number(item.TP) : 0;
+
+  if ((!sl || !tp) && item.Entry && Number(item.Entry) > 0) {
+    const entryVal = Number(item.Entry);
+    const pair = (item.Pair || 'XAUUSD').toUpperCase();
+    const buySell = item.BuySell || 'BUY';
+    const rrVal = item.RR || '1:2';
+
+    let rrRatio = 2;
+    if (rrVal.includes(':')) {
+      rrRatio = parseFloat(rrVal.split(':')[1]) || 2;
+    }
+
+    let pipSize = 0.0001;
+    if (pair.includes('XAU') || pair.includes('GOLD')) {
+      pipSize = 0.10;
+    } else if (pair.includes('JPY')) {
+      pipSize = 0.01;
+    } else if (pair.includes('BTC') || pair.includes('ETH')) {
+      pipSize = 1.0;
+    }
+
+    const slPips = 50;
+    const tpPips = 50 * rrRatio;
+    const tpDistance = tpPips * pipSize;
+    const slDistance = slPips * pipSize;
+
+    const decimals = (pair.includes('XAU') || pair.includes('JPY')) ? 2 : (pair.includes('BTC') ? 1 : 4);
+
+    if (!sl) {
+      sl = buySell === 'BUY' ? (entryVal - slDistance) : (entryVal + slDistance);
+      sl = parseFloat(sl.toFixed(decimals));
+    }
+    if (!tp) {
+      tp = buySell === 'BUY' ? (entryVal + tpDistance) : (entryVal - tpDistance);
+      tp = parseFloat(tp.toFixed(decimals));
+    }
+  }
+
+  return {
+    sl: sl > 0 ? sl : '-',
+    tp: tp > 0 ? tp : '-'
+  };
+}
+
 function renderTradingTable() {
   const tbody = document.getElementById('trading-table-body');
   if (!tbody) return;
@@ -427,6 +565,8 @@ function renderTradingTable() {
           ? '<span class="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/30 text-[10px] font-bold flex items-center gap-1 w-max">✅ PROFIT</span>'
           : '<span class="px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-500 border border-rose-500/30 text-[10px] font-bold flex items-center gap-1 w-max">❌ LOSS</span>');
 
+    const { sl: displaySL, tp: displayTP } = getOrCalculateSLTP(item);
+
     return `
       <tr class="hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50 transition border-b border-zinc-200 dark:border-zinc-800/60 text-xs text-zinc-700 dark:text-zinc-300">
         <td class="px-4 py-3 font-medium">${formatDate(item.Tanggal)}</td>
@@ -443,8 +583,8 @@ function renderTradingTable() {
           </div>
         </td>
         <td class="px-4 py-3 font-medium">${item.Entry || 0}</td>
-        <td class="px-4 py-3 text-rose-400 font-medium">${item.SL || '-'}</td>
-        <td class="px-4 py-3 text-emerald-400 font-medium">${item.TP || '-'}</td>
+        <td class="px-4 py-3 text-rose-500 dark:text-rose-400 font-bold">${displaySL}</td>
+        <td class="px-4 py-3 text-emerald-500 dark:text-emerald-400 font-bold">${displayTP}</td>
         <td class="px-4 py-3 font-medium">${isRunning ? '<span class="text-amber-500 italic">Floating</span>' : (item.Exit || 0)}</td>
         <td class="px-4 py-3 font-semibold">${item.Lot || 0.01}</td>
         <td class="px-4 py-3 font-extrabold ${isRunning ? 'text-amber-500' : (isProfit ? 'text-emerald-500' : 'text-rose-500')}">
@@ -513,24 +653,85 @@ function appendThousands() {
   }
 }
 
-// Profit vs Loss Toggle Handler
-function setPLOutcome(type) {
+// Profit vs Loss Toggle Handler (Otomatis atur Status & Exit Price jika diklik)
+function setPLOutcome(type, isUserClick = true) {
   tradingState.plType = type;
   const btnProfit = document.getElementById('btn-pl-profit');
   const btnLoss = document.getElementById('btn-pl-loss');
   const plInput = document.getElementById('input-profitloss');
+  const exitInput = document.getElementById('input-exit');
+  const statusInput = document.getElementById('input-status');
 
   if (type === 'PROFIT') {
-    btnProfit.className = 'flex-1 py-2 font-bold rounded-xl bg-emerald-600 text-white transition shadow-sm flex items-center justify-center gap-1';
-    btnLoss.className = 'flex-1 py-2 font-semibold rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:text-zinc-300 transition flex items-center justify-center gap-1';
+    if (btnProfit) btnProfit.className = 'flex-1 py-2 font-bold rounded-xl bg-emerald-600 text-white transition shadow-sm flex items-center justify-center gap-1';
+    if (btnLoss) btnLoss.className = 'flex-1 py-2 font-semibold rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:text-zinc-300 transition flex items-center justify-center gap-1';
+    
+    // Jika diklik langsung oleh user, otomatis atur Status ke CLOSED dan Exit Price ke TP
+    if (isUserClick) {
+      if (statusInput) statusInput.value = 'CLOSED';
+      toggleStatusMode();
+      const tpVal = document.getElementById('input-tp')?.value;
+      if (tpVal && exitInput) {
+        exitInput.value = tpVal;
+      }
+    }
+
     if (plInput && Number(plInput.value) < 0) {
       plInput.value = Math.abs(Number(plInput.value));
     }
   } else {
-    btnLoss.className = 'flex-1 py-2 font-bold rounded-xl bg-rose-600 text-white transition shadow-sm flex items-center justify-center gap-1';
-    btnProfit.className = 'flex-1 py-2 font-semibold rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:text-zinc-300 transition flex items-center justify-center gap-1';
+    if (btnLoss) btnLoss.className = 'flex-1 py-2 font-bold rounded-xl bg-rose-600 text-white transition shadow-sm flex items-center justify-center gap-1';
+    if (btnProfit) btnProfit.className = 'flex-1 py-2 font-semibold rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:text-zinc-300 transition flex items-center justify-center gap-1';
+
+    // Jika diklik langsung oleh user, otomatis atur Status ke CLOSED dan Exit Price ke SL
+    if (isUserClick) {
+      if (statusInput) statusInput.value = 'CLOSED';
+      toggleStatusMode();
+      const slVal = document.getElementById('input-sl')?.value;
+      if (slVal && exitInput) {
+        exitInput.value = slVal;
+      }
+    }
+
     if (plInput && Number(plInput.value) > 0) {
       plInput.value = -Math.abs(Number(plInput.value));
+    }
+  }
+}
+
+// Handler Otomatis ketika Exit Price diisi manual oleh user
+function onExitPriceInput() {
+  const exitInput = document.getElementById('input-exit');
+  const entryInput = document.getElementById('input-entry');
+  const buysellInput = document.getElementById('input-buysell');
+  const statusInput = document.getElementById('input-status');
+
+  if (!exitInput || !exitInput.value) return;
+
+  const exitVal = parseFloat(exitInput.value);
+  const entryVal = parseFloat(entryInput?.value) || 0;
+  const buySell = buysellInput?.value || 'BUY';
+
+  // Otomatis ubah status ke CLOSED
+  if (statusInput && statusInput.value === 'RUNNING') {
+    statusInput.value = 'CLOSED';
+    toggleStatusMode();
+  }
+
+  // Tentukan apakah Profit atau Loss secara otomatis jika ada nilai Entry
+  if (entryVal > 0 && !isNaN(exitVal)) {
+    if (buySell === 'BUY') {
+      if (exitVal >= entryVal) {
+        setPLOutcome('PROFIT', false);
+      } else {
+        setPLOutcome('LOSS', false);
+      }
+    } else { // SELL
+      if (exitVal <= entryVal) {
+        setPLOutcome('PROFIT', false);
+      } else {
+        setPLOutcome('LOSS', false);
+      }
     }
   }
 }
@@ -574,6 +775,23 @@ function changeSymbol(pairName) {
   showToast(`Chart diubah ke ${pairName}`, 'info');
 }
 
+function formatDateForInput(dateStr) {
+  if (!dateStr) return new Date().toISOString().split('T')[0];
+  if (typeof dateStr === 'string' && dateStr.includes('T')) {
+    return dateStr.split('T')[0];
+  }
+  try {
+    const d = new Date(dateStr);
+    if (!isNaN(d.getTime())) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+  } catch (e) {}
+  return String(dateStr).split('T')[0];
+}
+
 // Modal Handlers
 function openTradingModal(tradingID = null) {
   tradingState.editingID = tradingID;
@@ -582,6 +800,8 @@ function openTradingModal(tradingID = null) {
   const form = document.getElementById('trading-form');
 
   form.reset();
+  const lotInput = document.getElementById('input-lot');
+  if (lotInput) lotInput.value = '0.01';
   const entryInput = document.getElementById('input-entry');
   if (entryInput) entryInput.dataset.autoFilled = 'false';
 
@@ -589,21 +809,38 @@ function openTradingModal(tradingID = null) {
     const item = tradingState.items.find(t => t.TradingID === tradingID);
     if (item) {
       title.textContent = 'Edit Data Trading';
-      document.getElementById('input-tanggal').value = item.Tanggal || '';
+      document.getElementById('input-tanggal').value = formatDateForInput(item.Tanggal);
       document.getElementById('input-pair').value = item.Pair || 'XAUUSD';
       document.getElementById('input-buysell').value = item.BuySell || 'BUY';
       document.getElementById('input-status').value = item.Status || 'CLOSED';
       document.getElementById('input-entry').value = item.Entry || '';
-      document.getElementById('input-sl').value = item.SL || '';
-      document.getElementById('input-tp').value = item.TP || '';
-      document.getElementById('input-exit').value = item.Exit || '';
-      document.getElementById('input-lot').value = item.Lot || '0.01';
+      document.getElementById('input-rr').value = item.RR || '1:2';
       
+      const slInput = document.getElementById('input-sl');
+      const tpInput = document.getElementById('input-tp');
+      const exitInput = document.getElementById('input-exit');
+
+      slInput.value = (item.SL && Number(item.SL) > 0) ? item.SL : '';
+      tpInput.value = (item.TP && Number(item.TP) > 0) ? item.TP : '';
+
+      // Auto hitung SL (-50p) & TP jika belum terisi saat edit
+      if ((!slInput.value || !tpInput.value) && item.Entry > 0) {
+        autoCalculateSLTP(true);
+      }
+
+      exitInput.value = (item.Exit && Number(item.Exit) > 0) ? item.Exit : '';
+      if (!exitInput.value && item.Status === 'CLOSED') {
+        exitInput.value = item.TP || item.SL || (tradingState.currentLivePrice > 0 ? tradingState.currentLivePrice.toFixed(2) : '');
+      }
+
+      // Lot dipastikan default 0.01 jika angka tidak valid atau sangat besar
+      const parsedLot = Number(item.Lot);
+      document.getElementById('input-lot').value = (parsedLot > 0 && parsedLot <= 100) ? parsedLot : '0.01';
+
       const plVal = Number(item.ProfitLoss) || 0;
       document.getElementById('input-profitloss').value = Math.abs(plVal);
-      setPLOutcome(plVal >= 0 ? 'PROFIT' : 'LOSS');
+      setPLOutcome(plVal >= 0 ? 'PROFIT' : 'LOSS', false);
 
-      document.getElementById('input-rr').value = item.RR || '1:2';
       document.getElementById('input-catatan').value = item.Catatan || '';
     }
   } else {
@@ -614,6 +851,16 @@ function openTradingModal(tradingID = null) {
     document.getElementById('input-lot').value = '0.01';
     document.getElementById('input-rr').value = '1:2';
     setPLOutcome('PROFIT');
+
+    // Jika ada harga live, otomatis isi Entry & kalkulasi SL (-50p) & TP langsung ke VALUE input!
+    if (tradingState.currentLivePrice > 0) {
+      const entryInput = document.getElementById('input-entry');
+      if (entryInput) {
+        entryInput.value = tradingState.currentLivePrice.toFixed(2);
+        entryInput.dataset.autoFilled = 'true';
+      }
+      autoCalculateSLTP(true);
+    }
   }
 
   toggleStatusMode();
