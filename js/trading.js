@@ -1,5 +1,5 @@
 /**
- * MoneyM - Trading Module Logic & TradingView Widget (Realtime Ticker, SL/TP, Running Position & 5-Min Smart Notification Engine)
+ * AFinTrack - Trading Module Logic & TradingView Widget (Realtime Ticker, SL/TP, Running Position & 5-Min Smart Notification Engine)
  */
 
 let tradingState = {
@@ -89,7 +89,7 @@ function checkAndNotifyRunningTrades(items) {
 
     sendLocalNotification(title, {
       body: body,
-      tag: 'moneym-running-trades-alert'
+      tag: 'afintrack-running-trades-alert'
     });
   }
 }

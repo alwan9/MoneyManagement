@@ -1,6 +1,6 @@
 {
-  "name": "MoneyM - Manajemen Keuangan & Trading",
-  "short_name": "MoneyM",
+  "name": "AFinTrack - Manajemen Keuangan & Trading",
+  "short_name": "AFinTrack",
   "description": "Aplikasi Manajemen Keuangan Pribadi & Progress Trading PWA",
   "start_url": "./index.html",
   "display": "standalone",

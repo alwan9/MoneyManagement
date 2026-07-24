@@ -1,5 +1,5 @@
 /**
- * MoneyM - Dashboard Logic Controller (with Super Admin User Creation & Permission Matrix Management)
+ * AFinTrack - Dashboard Logic Controller (with Super Admin User Creation & Permission Matrix Management)
  */
 
 document.addEventListener('DOMContentLoaded', async () => {

@@ -1,5 +1,5 @@
 /**
- * MoneyM - Finance Module Logic Controller (with Skeleton Animate Loading)
+ * AFinTrack - Finance Module Logic Controller (with Skeleton Animate Loading)
  */
 
 let financeState = {

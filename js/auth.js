@@ -1,12 +1,12 @@
 /**
- * MoneyM - Authentication & API Dispatcher (High-Grade Security)
+ * AFinTrack - Authentication & API Dispatcher (High-Grade Security)
  */
 
 // Ubah URL ini menjadi URL Deployment Google Apps Script (Web App) Anda
-const MONEYM_API_URL = "https://script.google.com/macros/s/AKfycbzVOmPHhy0R03-TATh1WTJ4KuV39n30CQIpPv6OqPSJQ5NTv6MQD50Ila-ax5TJYRvx/exec";
+const AFINTRACK_API_URL = "https://script.google.com/macros/s/AKfycbzVOmPHhy0R03-TATh1WTJ4KuV39n30CQIpPv6OqPSJQ5NTv6MQD50Ila-ax5TJYRvx/exec";
 
 // Multi-User Session Storage Keys
-const SESSION_KEY = "MONEYM_ACTIVE_SESSION";
+const SESSION_KEY = "AFINTRACK_ACTIVE_SESSION";
 
 function getSession() {
   const data = localStorage.getItem(SESSION_KEY);
@@ -31,7 +31,8 @@ function saveSession(sessionData) {
 
 function destroyAllUserSessions() {
   localStorage.removeItem(SESSION_KEY);
-  localStorage.removeItem('MONEYM_CACHE_SESSION');
+  localStorage.removeItem('MONEYM_CACHE_SESSION'); // backward compat
+  localStorage.removeItem('AFINTRACK_CACHE_SESSION');
   localStorage.removeItem(PIN_KEY);
   sessionStorage.clear();
 
@@ -77,7 +78,7 @@ async function checkAuthGuard() {
   }
 }
 
-const PIN_KEY = "MONEYM_PIN_CODE";
+const PIN_KEY = "AFINTRACK_PIN_CODE";
 
 function getPin() {
   return localStorage.getItem(PIN_KEY) || "";
@@ -116,7 +117,7 @@ async function apiCall(action, payload = {}) {
     ...payload
   };
 
-  const apiUrl = localStorage.getItem('MONEYM_API_URL') || MONEYM_API_URL || "";
+  const apiUrl = localStorage.getItem('AFINTRACK_API_URL') || localStorage.getItem('MONEYM_API_URL') || AFINTRACK_API_URL || "";
 
   // Jika URL API belum dikonfigurasi, beri peringatan agar pengguna mengisinya
   if (!apiUrl || apiUrl.trim() === "") {
@@ -144,7 +145,7 @@ async function apiCall(action, payload = {}) {
     }
     return result;
   } catch (error) {
-    console.error('[MoneyM API Error]', error);
+    console.error('[AFinTrack API Error]', error);
     if (action.startsWith('add') || action.startsWith('update') || action.startsWith('delete')) {
       if (typeof saveOfflineQueue === 'function') {
         saveOfflineQueue(action, payload);

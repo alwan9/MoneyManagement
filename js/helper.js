@@ -1,10 +1,10 @@
 /**
- * MoneyM Helper Utilities, PWA Engine & Offline Sync Queue
+ * AFinTrack Helper Utilities, PWA Engine & Offline Sync Queue
  */
 
 // Theme Manager (Default: Dark, Uses Zinc Palette)
 function getTheme() {
-  return localStorage.getItem('MONEYM_THEME') || 'dark';
+  return localStorage.getItem('AFINTRACK_THEME') || localStorage.getItem('MONEYM_THEME') || 'dark';
 }
 
 function initTheme() {
@@ -20,7 +20,7 @@ function initTheme() {
 function toggleTheme() {
   const current = getTheme();
   const nextTheme = current === 'dark' ? 'light' : 'dark';
-  localStorage.setItem('MONEYM_THEME', nextTheme);
+  localStorage.setItem('AFINTRACK_THEME', nextTheme);
 
   if (nextTheme === 'dark') {
     document.documentElement.classList.add('dark');
@@ -63,13 +63,13 @@ function togglePasswordVisibility(inputId, eyeIconId) {
 
 // Privacy Mode Manager (Sembunyikan Saldo: Rp •••••••)
 function isPrivacyMode() {
-  return localStorage.getItem('MONEYM_PRIVACY_MODE') === 'true';
+  return localStorage.getItem('AFINTRACK_PRIVACY_MODE') === 'true' || localStorage.getItem('MONEYM_PRIVACY_MODE') === 'true';
 }
 
 function togglePrivacyMode() {
   const current = isPrivacyMode();
   const nextState = !current;
-  localStorage.setItem('MONEYM_PRIVACY_MODE', nextState ? 'true' : 'false');
+  localStorage.setItem('AFINTRACK_PRIVACY_MODE', nextState ? 'true' : 'false');
 
   updatePrivacyIcon(nextState);
   showToast(nextState ? 'Privacy Mode AKTIF (Saldo disembunyikan)' : 'Privacy Mode NONAKTIF', 'info');
@@ -223,7 +223,7 @@ function sendLocalNotification(title, options = {}) {
     icon: 'https://api.iconify.design/lucide:candlestick-chart.svg?color=%234f46e5',
     badge: 'https://api.iconify.design/lucide:wallet.svg?color=%234f46e5',
     vibrate: [200, 100, 200],
-    tag: 'moneym-running-trade-reminder',
+    tag: 'afintrack-running-trade-reminder',
     renotify: true,
     ...options
   };
@@ -242,7 +242,7 @@ function sendLocalNotification(title, options = {}) {
 }
 
 // 📶 Offline Queue Manager Engine
-const OFFLINE_QUEUE_KEY = 'MONEYM_OFFLINE_QUEUE';
+const OFFLINE_QUEUE_KEY = 'AFINTRACK_OFFLINE_QUEUE';
 
 function getOfflineQueue() {
   try {
@@ -318,7 +318,7 @@ function initPwaInstallBanner() {
     e.preventDefault();
     window.deferredPwaPrompt = e;
 
-    const installed = localStorage.getItem('MONEYM_PWA_INSTALLED') === 'true';
+    const installed = localStorage.getItem('AFINTRACK_PWA_INSTALLED') === 'true' || localStorage.getItem('MONEYM_PWA_INSTALLED') === 'true';
     if (!installed) {
       showPwaInstallBannerUI();
     }
@@ -326,9 +326,9 @@ function initPwaInstallBanner() {
 
   window.addEventListener('appinstalled', () => {
     window.deferredPwaPrompt = null;
-    localStorage.setItem('MONEYM_PWA_INSTALLED', 'true');
+    localStorage.setItem('AFINTRACK_PWA_INSTALLED', 'true');
     hidePwaInstallBannerUI();
-    showToast('🎉 Aplikasi MoneyM berhasil diinstall di HP Anda!', 'success');
+    showToast('🎉 Aplikasi AFinTrack berhasil diinstall di HP Anda!', 'success');
   });
 }
 
@@ -348,7 +348,7 @@ function showPwaInstallBannerUI() {
           </div>
           <div>
             <h4 class="text-xs font-extrabold text-white flex items-center gap-1.5">
-              <span>Install MoneyM App</span>
+              <span>Install AFinTrack App</span>
               <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
             </h4>
             <p class="text-[11px] text-zinc-400">Akses cepat & fleksibel dari layar HP</p>
@@ -415,7 +415,7 @@ async function triggerPwaInstall() {
     window.deferredPwaPrompt.prompt();
     const { outcome } = await window.deferredPwaPrompt.userChoice;
     if (outcome === 'accepted') {
-      localStorage.setItem('MONEYM_PWA_INSTALLED', 'true');
+      localStorage.setItem('AFINTRACK_PWA_INSTALLED', 'true');
     }
     window.deferredPwaPrompt = null;
     hidePwaInstallBannerUI();

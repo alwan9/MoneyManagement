@@ -1,5 +1,5 @@
 /**
- * MoneyM - Super Admin Controller (User Management & Permission Matrix Controller)
+ * AFinTrack - Super Admin Controller (User Management & Permission Matrix Controller)
  */
 
 let adminState = {

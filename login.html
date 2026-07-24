@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - MoneyM Trading & Finance</title>
+  <title>Login — AFinTrack Trading & Finance</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#4f46e5">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -30,7 +30,7 @@
       <div class="inline-flex items-center justify-center w-16 h-16 bg-indigo-600/20 text-indigo-400 rounded-2xl mb-3 border border-indigo-500/30">
         <iconify-icon icon="lucide:wallet" class="text-3xl text-indigo-400"></iconify-icon>
       </div>
-      <h1 class="text-2xl font-bold tracking-tight text-white">MoneyM Login</h1>
+      <h1 class="text-2xl font-bold tracking-tight text-white">AFinTrack Login</h1>
       <p class="text-zinc-400 text-xs mt-1">Manajemen Keuangan & Progress Trading PWA</p>
     </div>
 
@@ -87,7 +87,7 @@
       checkAuthGuard();
 
       const pin = typeof getPin === 'function' ? getPin() : '';
-      const cachedSession = localStorage.getItem('MONEYM_CACHE_SESSION');
+      const cachedSession = localStorage.getItem('AFINTRACK_CACHE_SESSION') || localStorage.getItem('MONEYM_CACHE_SESSION');
       if (pin && cachedSession) {
         const pinSec = document.getElementById('pin-section');
         if (pinSec) pinSec.classList.remove('hidden');
@@ -97,7 +97,7 @@
     function unlockWithPin() {
       const enteredPin = document.getElementById('pin-input')?.value;
       const savedPin = getPin();
-      const cachedSessionStr = localStorage.getItem('MONEYM_CACHE_SESSION');
+      const cachedSessionStr = localStorage.getItem('AFINTRACK_CACHE_SESSION') || localStorage.getItem('MONEYM_CACHE_SESSION');
 
       if (!enteredPin || enteredPin.length !== 4) {
         showToast('Masukkan 4 digit PIN.', 'warning');
@@ -132,7 +132,7 @@
       if (res.success) {
         if (res.data) {
           saveSession(res.data);
-          localStorage.setItem('MONEYM_CACHE_SESSION', JSON.stringify(res.data));
+          localStorage.setItem('AFINTRACK_CACHE_SESSION', JSON.stringify(res.data));
         }
         showToast(res.message || 'Login berhasil!', 'success');
         setTimeout(() => {
